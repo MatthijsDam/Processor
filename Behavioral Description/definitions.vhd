@@ -6,16 +6,16 @@ PACKAGE intruction_decode_defs IS
   -- opcodes
   CONSTANT Rtype : std_logic_vector(5 DOWNTO 0) := "000000";
     -- functions
-    CONSTANT add : std_logic_vector(5 DOWNTO 0) := "100000";
-    CONSTANT andFunction : std_logic_vector(5 DOWNTO 0) := "100100";
-    CONSTANT divu : std_logic_vector(5 DOWNTO 0) := "011011";
-    CONSTANT mult : std_logic_vector(5 DOWNTO 0) := "011000";
-    CONSTANT mfhi : std_logic_vector(5 DOWNTO 0) := "010000";
-    CONSTANT mflo : std_logic_vector(5 DOWNTO 0) := "010010";
-    CONSTANT orFunction : std_logic_vector(5 DOWNTO 0) := "100101";
-    CONSTANT sub : std_logic_vector(5 DOWNTO 0) := "100010";
-    CONSTANT xorFunction : std_logic_vector(5 DOWNTO 0) := "100110";
-    CONSTANT nop : std_logic_vector(5 DOWNTO 0) := "000000";
+    CONSTANT F_add : std_logic_vector(5 DOWNTO 0) := "100000";
+    CONSTANT F_and : std_logic_vector(5 DOWNTO 0) := "100100";
+    CONSTANT F_divu : std_logic_vector(5 DOWNTO 0) := "011011";
+    CONSTANT F_mult : std_logic_vector(5 DOWNTO 0) := "011000";
+    CONSTANT F_mfhi : std_logic_vector(5 DOWNTO 0) := "010000";
+    CONSTANT F_mflo : std_logic_vector(5 DOWNTO 0) := "010010";
+    CONSTANT F_or : std_logic_vector(5 DOWNTO 0) := "100101";
+    CONSTANT F_sub : std_logic_vector(5 DOWNTO 0) := "100010";
+    CONSTANT F_xor : std_logic_vector(5 DOWNTO 0) := "100110";
+    CONSTANT F_nop : std_logic_vector(5 DOWNTO 0) := "000000";
   
   CONSTANT Iadd : std_logic_vector(5 DOWNTO 0) := "001000";
   CONSTANT Iand : std_logic_vector(5 DOWNTO 0) := "001100";

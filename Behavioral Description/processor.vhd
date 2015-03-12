@@ -54,11 +54,10 @@ BEGIN
         
         VARIABLE funct              : std_logic_vector(5 DOWNTO 0);
 
-        VARIABLE imm                : std_logic_vector(15 DOWNTO 0);
+        VARIABLE imm                : std_logic_vector(31 DOWNTO 0);
         VARIABLE target             : std_logic_vector(25 DOWNTO 0);
         VARIABLE temp64             : std_logic_vector(63 DOWNTO 0);
-
-        
+        VARIABLE temp_pc            : std_logic_vector(29 DOWNTO 0);        
 
     -- A read operation has 1 clock cycle delay
     PROCEDURE memory_read(
@@ -108,7 +107,7 @@ BEGIN
                     state <= execute;
 
                 WHEN execute =>
-                    state <= fetch; ---- let op!
+                    state <= fetch; 
                   
                     -- Common
                     opcode      := instruction(31 DOWNTO 26);
@@ -141,7 +140,8 @@ BEGIN
                                 reg(dst) <= std_logic_vector( signed(operand1) + signed(operand2) ); 
                             -- Arithmetic DIVU
                             WHEN F_divu =>
-                                --reg(dst) = std_logic_vector( to_unsigned(reg(src), 32) / to_unsigned(reg(src_tgt), 32) ); -- int to logic vector logic needs to be addeda
+                                reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) );
+                                reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) );
                             -- Arithmetic MULT
                             WHEN F_mult =>
                                  temp64 := std_logic_vector( signed(operand1) * signed(operand2) ); 
@@ -150,20 +150,17 @@ BEGIN
                             -- Arithmetic SUB
                             WHEN F_sub =>
                                  reg(dst) <= std_logic_vector( signed(operand1) - signed(operand2) );                                 
-
                             -- Logic AND
                             WHEN F_and =>      
                                  reg(dst) <= operand1 AND operand2;                                      
                             -- Logic OR
                             WHEN F_or =>
-                                 reg(dst) <= operand1 OR operand2 );                                 
+                                 reg(dst) <= operand1 OR operand2;                                 
                             -- Logic XOR
                             WHEN F_xor =>
-                                 reg(dst) <= operand1 XOR operand2 );                                 
+                                 reg(dst) <= operand1 XOR operand2;                                 
                             -- NOP "operation"
-                            WHEN F_xor =>
-                               --something with reg(0)
-
+                            WHEN F_nop =>
                             -- MFHI move from $HI to dst register
                             WHEN F_mfhi =>
                                   reg(dst) <= reg_HI;
@@ -174,41 +171,40 @@ BEGIN
                         END CASE;
 
                      -- ADD immediate operation
-                     WHEN "001000" =>
-
-                        --reg(src_tgt) = std_logic_vector(reg(src) + imm; -- int to logic vector logic needs to be added
+                     WHEN Iadd =>
+                        reg(src_tgt) <= std_logic_vector(signed(operand1) + signed(imm));
                      -- AND immediate operation
-                     WHEN "001100" =>
-                        reg(dst) <= operand1(15 DOWNTO 0) AND std_logic_vector(resize(signed(imm),32));
+                     WHEN Iand =>
+                        reg(src_tgt) <= operand1 AND imm;
                      -- OR immediate operation
-                     WHEN "001101" =>   
-                        
+                     WHEN Ior =>   
+                        reg(src_tgt) <= operand1 OR imm;
                      -- JUMP immediate operation
-                     WHEN "000010" =>
+                     WHEN Jjump =>
+                       temp_pc  := std_logic_vector(to_unsigned(pc,30));
+                       pc       := to_integer(unsigned(std_logic_vector'(temp_pc(29 DOWNTO 26) & target)));
                      -- BEQ immediate operation
-                     WHEN "000100" =>   
-                     -- BGEZ immediate operation
-                     WHEN "000001" =>
-                     
-
+                     WHEN Ibeq =>   
+                     -- BGTZ immediate operation
+                     WHEN Ibgtz =>
                      -- LUI immediate operation 
-                     WHEN "001111" => 
-                        reg(
+                     WHEN Ilui => 
+                        --reg(
                      -- Load word  LW memory immediate operation
-                     WHEN "100011" =>
+                     WHEN Ilw =>
                         state <= mem;
                      -- Store word SW memory immediate operation
-                     WHEN "101011" => 
+                     WHEN Isw => 
                         state <= mem;
                      WHEN OTHERS =>     
                     END CASE;
                 WHEN mem =>
                     state <= fetch;
-                    
             END CASE;
         END IF;
     END PROCESS;
 
 END ARCHITECTURE;
+
 
 
