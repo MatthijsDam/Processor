@@ -22,8 +22,8 @@ main:
      ori $13,$0, 1023 # stores logic branch condition
      
     
-     addi $20, $0, 0x2100  # .data offset voor simulator
- #    addi $20, $0, 256    # .data offset voor "hardware"
+#     addi $20, $0, 0x2100  # .data offset voor simulator
+     addi $20, $0, 256    # .data offset voor "hardware"
      
      sw   $2, -24($20) # store all the registers to the memory, offset and register flipped in order to switch easy between simulator and hardware
      sw   $3, -20($20)
