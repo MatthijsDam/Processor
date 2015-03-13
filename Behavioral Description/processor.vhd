@@ -69,6 +69,7 @@ BEGIN
 
         BEGIN
             read        <= '1';
+            write       <= '0';
             address     := std_logic_vector(to_unsigned(pc,30)) & "00";
             address_bus <= address;
     END memory_read;
@@ -78,6 +79,7 @@ BEGIN
                     data    : IN std_logic_vector(31 DOWNTO 0)) IS    
         BEGIN
             write       <= '1';
+            read        <= '0';
             address_bus <= address;
             databus_out <= data;
     END memory_write;  
@@ -99,7 +101,7 @@ BEGIN
                 WHEN fetch =>
                     --
                     -- Instruction fetch
-                    --
+                    -- 
                     memory_read(pc);
 
                     -- Increase program counter
@@ -201,7 +203,7 @@ BEGIN
                         reg(dst) <= std_logic_vector(unsigned(imm) sll 16);
                      -- Load word  LW memory immediate operation
                      WHEN Ilw =>
-                        memory_read(to_integer((signed(operand1) + signed(imm)) sll 2));
+                        memory_read(to_integer((signed(operand1) + signed(imm)) srl 2));
                         state <= mem;
                      -- Store word SW memory immediate operation
                      WHEN Isw => 
@@ -211,7 +213,7 @@ BEGIN
                      WHEN OTHERS =>     
                     END CASE;
                 WHEN mem =>
-                    reg(src)  <= databus_in;
+                    reg(src_tgt)  <= databus_in;
                     
                     -- Fetch
                     memory_read(pc);
