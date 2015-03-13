@@ -24,7 +24,7 @@ ENTITY processor IS
 END processor;
 
 ARCHITECTURE behaviour OF processor IS
-    TYPE fsm_state_t IS (fetch, execute, mem);
+    TYPE fsm_state_t IS (fetch, execute, mem_read,mem_write);
     SIGNAL state : fsm_state_t;  
       
     TYPE reg_bank_t IS ARRAY (0 TO 31) OF std_logic_vector(31 DOWNTO 0); 
@@ -64,14 +64,10 @@ BEGIN
 
     -- A read operation has 1 clock cycle delay
     PROCEDURE memory_read(pc : IN INTEGER) IS
-        
-        VARIABLE address     : std_logic_vector(31 DOWNTO 0);
-
         BEGIN
             read        <= '1';
             write       <= '0';
-            address     := std_logic_vector(to_unsigned(pc,30)) & "00";
-            address_bus <= address;
+            address_bus <= std_logic_vector(to_unsigned(pc,30)) & "00";
     END memory_read;
 
     PROCEDURE memory_write(
@@ -204,15 +200,16 @@ BEGIN
                      -- Load word  LW memory immediate operation
                      WHEN Ilw =>
                         memory_read(to_integer((signed(operand1) + signed(imm)) srl 2));
-                        state <= mem;
+                        state <= mem_read;
                      -- Store word SW memory immediate operation
                      WHEN Isw => 
                         address_temp := std_logic_vector(signed(operand1) + signed(imm));
                         data_temp    := operand2;
+						state 		<= mem_write;
                         memory_write(address_temp,data_temp);
                      WHEN OTHERS =>     
                     END CASE;
-                WHEN mem =>
+                WHEN mem_read =>
                     reg(src_tgt)  <= databus_in;
                     
                     -- Fetch
@@ -221,6 +218,8 @@ BEGIN
                     pc := pc+1;
                     
                     state     <= execute;
+				WHEN mem_write =>
+					state 	<= fetch;
             END CASE;
         END IF;
     END PROCESS;
