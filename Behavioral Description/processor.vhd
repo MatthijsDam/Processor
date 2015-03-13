@@ -25,16 +25,16 @@ END processor;
 
 ARCHITECTURE behaviour OF processor IS
     TYPE fsm_state_t IS (fetch, execute, mem);
+    SIGNAL state : fsm_state_t;  
+      
     TYPE reg_bank_t IS ARRAY (0 TO 31) OF std_logic_vector(31 DOWNTO 0); 
     SIGNAL reg                      : reg_bank_t := 
          ("00000000000000000000000000000000",
-          "00000000000000000000000000000001",
-          "00000000000000000000000000000010",
           OTHERS => "00000000000000000000000000000000"
           );
           
-    SIGNAL reg_LO, reg_HI     : std_logic_vector(31 DOWNTO 0);
-      SIGNAL state              : fsm_state_t;
+    SIGNAL reg_LO, reg_HI : std_logic_vector(31 DOWNTO 0);
+
     
 BEGIN
 
@@ -57,12 +57,13 @@ BEGIN
         VARIABLE imm                : std_logic_vector(31 DOWNTO 0);
         VARIABLE target             : std_logic_vector(25 DOWNTO 0);
         VARIABLE temp64             : std_logic_vector(63 DOWNTO 0);
-        VARIABLE temp_pc            : std_logic_vector(29 DOWNTO 0);        
+        VARIABLE temp_pc            : std_logic_vector(29 DOWNTO 0);  
+        
+        VARIABLE address_temp       : std_logic_vector(31 DOWNTO 0);
+        VARIABLE data_temp          : std_logic_vector(31 DOWNTO 0);      
 
     -- A read operation has 1 clock cycle delay
-    PROCEDURE memory_read(
-                pc      : IN INTEGER; 
-                data    : OUT std_logic_vector(31 DOWNTO 0)) IS
+    PROCEDURE memory_read(pc : IN INTEGER) IS
         
         VARIABLE address     : std_logic_vector(31 DOWNTO 0);
 
@@ -70,14 +71,14 @@ BEGIN
             read        <= '1';
             address     := std_logic_vector(to_unsigned(pc,30)) & "00";
             address_bus <= address;
-            data        := databus_in;
     END memory_read;
 
     PROCEDURE memory_write(
                     address : IN std_logic_vector(31 DOWNTO 0); 
                     data    : IN std_logic_vector(31 DOWNTO 0)) IS    
         BEGIN
-            write         <= '1';
+            write       <= '1';
+            address_bus <= address;
             databus_out <= data;
     END memory_write;  
       
@@ -99,7 +100,7 @@ BEGIN
                     --
                     -- Instruction fetch
                     --
-                    memory_read(pc,instruction);
+                    memory_read(pc);
 
                     -- Increase program counter
                     pc := pc+1;
@@ -107,7 +108,8 @@ BEGIN
                     state <= execute;
 
                 WHEN execute =>
-                    state <= fetch; 
+                    instruction := databus_in;
+                    state       <= fetch; 
                   
                     -- Common
                     opcode      := instruction(31 DOWNTO 26);
@@ -126,13 +128,14 @@ BEGIN
                     -- Jump (J-Type):
                     target      := instruction(25 DOWNTO 0);
                     -----------------------------------------
+                    operand1    := reg(src);
+                    operand2    := reg(src_tgt);
                     
                     -- Decoding and execution
-                    CASE opcode IS
+                    CASE opcode IS                        
                      -- Arithmetic registers operation or nop
                      WHEN Rtype =>
-                        operand1 := reg(src);
-                        operand2 := reg(src_tgt);
+
                        
                         CASE funct IS
                             -- Arithmetic ADD
@@ -185,26 +188,41 @@ BEGIN
                        pc       := to_integer(unsigned(std_logic_vector'(temp_pc(29 DOWNTO 26) & target)));
                      -- BEQ immediate operation
                      WHEN Ibeq =>   
+                        IF operand1 = operand2 THEN
+                          pc := pc + to_integer(signed(imm(31 DOWNTO 2)));
+                        END IF;  
                      -- BGTZ immediate operation
                      WHEN Ibgtz =>
+                        IF signed(operand1) > 0 THEN
+                          pc := pc + to_integer(signed(imm(31 DOWNTO 2)));
+                        END IF;  
                      -- LUI immediate operation 
                      WHEN Ilui => 
-                        --reg(
+                        reg(dst) <= std_logic_vector(unsigned(imm) sll 16);
                      -- Load word  LW memory immediate operation
                      WHEN Ilw =>
+                        memory_read(to_integer((signed(operand1) + signed(imm)) sll 2));
                         state <= mem;
                      -- Store word SW memory immediate operation
                      WHEN Isw => 
-                        state <= mem;
+                        address_temp := std_logic_vector(signed(operand1) + signed(imm));
+                        data_temp    := operand2;
+                        memory_write(address_temp,data_temp);
                      WHEN OTHERS =>     
                     END CASE;
                 WHEN mem =>
-                    state <= fetch;
+                    reg(src)  <= databus_in;
+                    
+                    -- Fetch
+                    memory_read(pc);
+                    -- Increase program counter
+                    pc := pc+1;
+                    
+                    state     <= execute;
             END CASE;
         END IF;
     END PROCESS;
 
 END ARCHITECTURE;
-
 
 
