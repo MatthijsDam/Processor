@@ -1,8 +1,10 @@
 add wave *
+
 add wave -position end  sim:/topentity/proc/state
 add wave -position end  sim:/topentity/proc/reg
 add wave -position end  sim:/topentity/proc/reg_LO
 add wave -position end  sim:/topentity/proc/reg_HI
+add wave -position end  sim:/topentity/mem/mem
 
 radix signal sim:/topentity/address_bus hexadecimal
 radix signal sim:/topentity/databus1 hexadecimal
