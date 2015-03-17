@@ -56,7 +56,7 @@ BEGIN
         VARIABLE imm                : std_logic_vector(31 DOWNTO 0);
         VARIABLE target             : std_logic_vector(25 DOWNTO 0);
         VARIABLE temp64             : std_logic_vector(63 DOWNTO 0);
-        VARIABLE temp_pc            : std_logic_vector(29 DOWNTO 0);  
+        VARIABLE temp_pc            : std_logic_vector(31 DOWNTO 0);  
         
         VARIABLE address_temp       : std_logic_vector(31 DOWNTO 0);
         VARIABLE data_temp          : std_logic_vector(31 DOWNTO 0);      
@@ -65,7 +65,7 @@ BEGIN
     PROCEDURE memory_read(pc : IN INTEGER) IS
         BEGIN
             write       <= '0';
-            address_bus <= std_logic_vector(to_unsigned(pc,30)) & "00";
+            address_bus <= std_logic_vector(to_unsigned(pc,32));
     END memory_read;
 
     PROCEDURE memory_write(
@@ -97,7 +97,7 @@ BEGIN
                     memory_read(pc);
 
                     -- Increase program counter
-                    pc := pc+1;
+                    pc := pc+4;
 
                     state <= execute;
 
@@ -178,24 +178,24 @@ BEGIN
                         reg(src_tgt) <= operand1 OR imm;
                      -- JUMP immediate operation
                      WHEN Jjump =>
-                       temp_pc  := std_logic_vector(to_unsigned(pc,30));
-                       pc       := to_integer(unsigned(std_logic_vector'(temp_pc(29 DOWNTO 26) & target)));
+                       temp_pc  := std_logic_vector(to_unsigned(pc,32));
+                       pc       := to_integer(unsigned(std_logic_vector'(temp_pc(31 DOWNTO 28) & target & "00")));
                      -- BEQ immediate operation
                      WHEN Ibeq =>   
                         IF operand1 = operand2 THEN
-                          pc := pc + to_integer(signed(imm));
+                          pc := pc + to_integer(signed(imm) sll 2);
                         END IF;  
                      -- BGTZ immediate operation
                      WHEN Ibgtz =>
                         IF signed(operand1) > 0 THEN
-                          pc := pc + to_integer(signed(imm));
+                          pc := pc + to_integer(signed(imm) sll 2);
                         END IF;  
                      -- LUI immediate operation 
                      WHEN Ilui => 
                         reg(dst) <= std_logic_vector(unsigned(imm) sll 16);
                      -- Load word  LW memory immediate operation
                      WHEN Ilw =>
-                        memory_read(to_integer((signed(operand1) + signed(imm)) srl 2));
+                        memory_read(to_integer(signed(operand1) + signed(imm)));
                         state <= mem_read;
                      -- Store word SW memory immediate operation
                      WHEN Isw => 
@@ -211,7 +211,7 @@ BEGIN
                     -- Fetch
                     memory_read(pc);
                     -- Increase program counter
-                    pc := pc+1;
+                    pc := pc+4;
                     
                     state     <= execute;
 				WHEN mem_write =>

@@ -87,7 +87,9 @@ BEGIN
 					);
 
 	BEGIN
-		address 	:=  to_integer(unsigned(address_bus(31 DOWNTO 2)));
+		IF to_integer(unsigned(address_bus(31 DOWNTO 2))) < high_address THEN
+			address 	:=  to_integer(unsigned(address_bus(31 DOWNTO 2)));
+		END	IF;
 		databus_out <= mem(address);
 		IF rising_edge(clk) THEN
 			IF write = '1' THEN
