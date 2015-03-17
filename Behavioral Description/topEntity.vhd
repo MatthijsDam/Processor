@@ -23,7 +23,6 @@ ARCHITECTURE behaviour OF topEntity IS
 			address_bus	: OUT std_logic_vector(31 DOWNTO 0);
 			databus_in	: IN  std_logic_vector(31 DOWNTO 0);
 			databus_out : OUT std_logic_vector(31 DOWNTO 0);
-			read		: OUT std_logic;
 			write 		: OUT std_logic;
 			reset		: IN  std_logic;
 			clk			: IN  std_logic
@@ -35,7 +34,6 @@ ARCHITECTURE behaviour OF topEntity IS
 			address_bus	: IN  std_logic_vector(31 DOWNTO 0);
 			databus_in	: IN  std_logic_vector(31 DOWNTO 0);
 			databus_out : OUT std_logic_vector(31 DOWNTO 0);
-			read		: IN  std_logic;
 			write 		: IN  std_logic;	
 			clk			: IN  std_logic
 			);
@@ -44,7 +42,6 @@ ARCHITECTURE behaviour OF topEntity IS
 	SIGNAL address_bus	: std_logic_vector(31 DOWNTO 0);
 	SIGNAL databus1		: std_logic_vector(31 DOWNTO 0);
 	SIGNAL databus2 	: std_logic_vector(31 DOWNTO 0);
-	SIGNAL read 		: std_logic;
 	SIGNAL write 		: std_logic;
 
 	BEGIN
@@ -53,7 +50,6 @@ ARCHITECTURE behaviour OF topEntity IS
 				address_bus => address_bus,
 				databus_in	=> databus1,
 				databus_out => databus2,
-				read		=> read,
 				write		=> write,
 				reset		=> reset,
 				clk			=> clk
@@ -64,7 +60,6 @@ ARCHITECTURE behaviour OF topEntity IS
 				address_bus => address_bus,
 				databus_in	=> databus2,
 				databus_out => databus1,
-				read		=> read,
 				write		=> write,
 				clk			=> clk
 				);

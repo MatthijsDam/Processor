@@ -14,8 +14,7 @@ ENTITY memory IS
 		address_bus	: IN  std_logic_vector(31 DOWNTO 0);
 		databus_in	: IN  std_logic_vector(31 DOWNTO 0);
 		databus_out : OUT std_logic_vector(31 DOWNTO 0);
-		read		: IN  std_logic;
-		write 		: IN  std_logic;	
+		write		: IN  std_logic;
 		clk			: IN  std_logic
 	);
 END memory;
@@ -23,7 +22,7 @@ END memory;
 ARCHITECTURE behaviour OF memory IS
 
 BEGIN
-	PROCESS(clk)
+	PROCESS(clk,address_bus)
 		CONSTANT low_address	: INTEGER := 0; 
 		CONSTANT high_address	: INTEGER := 256;
 
@@ -88,14 +87,11 @@ BEGIN
 					);
 
 	BEGIN
+		address 	:=  to_integer(unsigned(address_bus(31 DOWNTO 2)));
+		databus_out <= mem(address);
 		IF rising_edge(clk) THEN
-			address :=  to_integer(unsigned(address_bus(31 DOWNTO 2)));
-
 			IF write = '1' THEN
-				mem(address) := databus_in;
-			ELSE 
-				-- Read instruction
-				databus_out  <= mem(address);
+				mem(address) := databus_in;			
 			END IF;
 		END IF;
 	END PROCESS;

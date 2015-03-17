@@ -16,8 +16,7 @@ ENTITY processor IS
         address_bus     : OUT std_logic_vector(31 DOWNTO 0);
         databus_in      : IN  std_logic_vector(31 DOWNTO 0);
         databus_out     : OUT std_logic_vector(31 DOWNTO 0);
-        read            : OUT std_logic;
-        write           : OUT std_logic;
+        write            : OUT std_logic;
         reset           : IN  std_logic;
         clk             : IN  std_logic
     );
@@ -65,7 +64,6 @@ BEGIN
     -- A read operation has 1 clock cycle delay
     PROCEDURE memory_read(pc : IN INTEGER) IS
         BEGIN
-            read        <= '1';
             write       <= '0';
             address_bus <= std_logic_vector(to_unsigned(pc,30)) & "00";
     END memory_read;
@@ -74,8 +72,7 @@ BEGIN
                     address : IN std_logic_vector(31 DOWNTO 0); 
                     data    : IN std_logic_vector(31 DOWNTO 0)) IS    
         BEGIN
-            write       <= '1';
-            read        <= '0';
+            write        <= '1';
             address_bus <= address;
             databus_out <= data;
     END memory_write;  
@@ -85,7 +82,6 @@ BEGIN
         IF reset='1' THEN 
             state           <= fetch;
             pc              := 0;
-            read            <= '0';
             write           <= '0';
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
             address_bus     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
@@ -187,12 +183,12 @@ BEGIN
                      -- BEQ immediate operation
                      WHEN Ibeq =>   
                         IF operand1 = operand2 THEN
-                          pc := pc + to_integer(signed(imm(31 DOWNTO 2)));
+                          pc := pc + to_integer(signed(imm));
                         END IF;  
                      -- BGTZ immediate operation
                      WHEN Ibgtz =>
                         IF signed(operand1) > 0 THEN
-                          pc := pc + to_integer(signed(imm(31 DOWNTO 2)));
+                          pc := pc + to_integer(signed(imm));
                         END IF;  
                      -- LUI immediate operation 
                      WHEN Ilui => 
