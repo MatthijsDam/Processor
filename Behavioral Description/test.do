@@ -1,3 +1,4 @@
+vsim work.topentity
 add wave *
 
 add wave -position end  sim:/topentity/proc/state
