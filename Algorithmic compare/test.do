@@ -1,4 +1,10 @@
+vcom definitions.vhd
+vcom processor.vhd
+vcom memory.vhd
+vcom compare.vhd
+vcom topEntity.vhd
 vsim work.topentity
+
 add wave *
 
 add wave -position end  sim:/topentity/proc/state
@@ -16,4 +22,4 @@ force clk 0,1 10ns -repeat 20ns
 force reset 1
 run 50ns
 force reset 0
-run 1000ns
+run 3000ns

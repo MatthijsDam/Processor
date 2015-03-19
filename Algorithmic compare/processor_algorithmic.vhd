@@ -8,10 +8,10 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.ALL;
-USE intruction_decode_defs.ALL;
+USE instruction_decode_defs.ALL;
 
 
-ENTITY processor IS
+ENTITY processor_alg IS
     PORT(
         address_bus     : OUT std_logic_vector(31 DOWNTO 0);
         databus_in      : IN  std_logic_vector(31 DOWNTO 0);
@@ -20,9 +20,9 @@ ENTITY processor IS
         reset           : IN  std_logic;
         clk             : IN  std_logic
     );
-END processor;
+END processor_alg;
 
-ARCHITECTURE behaviour OF processor IS
+ARCHITECTURE behaviour OF processor_alg IS
     TYPE fsm_state_t IS (fetch, execute, mem_read,mem_write);
     SIGNAL state : fsm_state_t;  
       

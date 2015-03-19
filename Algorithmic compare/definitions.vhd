@@ -1,7 +1,7 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-PACKAGE intruction_decode_defs IS
+PACKAGE instruction_decode_defs IS
 
   -- opcodes
   CONSTANT Rtype : std_logic_vector(5 DOWNTO 0) := "000000";
@@ -28,4 +28,4 @@ PACKAGE intruction_decode_defs IS
 
   CONSTANT Jjump : std_logic_vector(5 DOWNTO 0) := "000010";
 
-END intruction_decode_defs;
+END instruction_decode_defs;
