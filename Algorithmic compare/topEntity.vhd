@@ -23,10 +23,9 @@ ARCHITECTURE behaviour OF topEntity IS
 			address_bus_mem : OUT std_logic_vector(31 DOWNTO 0);
 			address_bus_bhv : IN  std_logic_vector(31 DOWNTO 0);
 			address_bus_alg : IN  std_logic_vector(31 DOWNTO 0);
-			data_bus_mem 	: OUT std_logic_vector(31 DOWNTO 0);
 			data_bus_bhv 	: IN  std_logic_vector(31 DOWNTO 0);
 			data_bus_alg 	: IN  std_logic_vector(31 DOWNTO 0);
-			write_mem      : OUT std_logic;
+			write_mem       : OUT std_logic;
 			write_bhv		: IN  std_logic;
 			write_alg		: IN  std_logic;
 			enable_bhv		: OUT std_logic;
@@ -72,7 +71,6 @@ ARCHITECTURE behaviour OF topEntity IS
 	SIGNAL address_bus_bhv	: std_logic_vector(31 DOWNTO 0);
 	SIGNAL address_bus_alg	: std_logic_vector(31 DOWNTO 0);
 	
-	SIGNAL data_bus_mem	: std_logic_vector(31 DOWNTO 0);
 	SIGNAL data_bus_bhv	: std_logic_vector(31 DOWNTO 0);
 	SIGNAL data_bus_alg	: std_logic_vector(31 DOWNTO 0);
 	SIGNAL databus		: std_logic_vector(31 DOWNTO 0);
@@ -90,7 +88,6 @@ ARCHITECTURE behaviour OF topEntity IS
 				address_bus_mem	=> address_mem,
 				address_bus_bhv	=> address_bus_bhv,
 				address_bus_alg	=> address_bus_alg,
-				data_bus_mem	=> data_bus_mem,
 				data_bus_bhv 	=> data_bus_bhv,
 				data_bus_alg	=> data_bus_alg,
 				write_mem		=> write_mem,
@@ -124,7 +121,7 @@ ARCHITECTURE behaviour OF topEntity IS
 		mem : memory
 		PORT MAP(
 				address_bus => address_mem,
-				databus_in	=> data_bus_mem,
+				databus_in	=> data_bus_bhv,
 				databus_out => databus,
 				write		=> write_mem,
 				clk			=> clk
