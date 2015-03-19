@@ -60,8 +60,8 @@ main:
      ori $26,$0, 0 # arithmetic loop counter
      ori $27,$0, 0 # logic loop counter   
     
-     addi $20, $0, 0x2100  # .data offset voor simulator
- #   addi $20, $0, 256    # .data offset voor "hardware"
+ #    addi $20, $0, 0x2100  # .data offset voor simulator
+    addi $20, $0, 1020    # .data offset voor "hardware"
      
      sw   $2, 0($20)          # store all the registers to the memory, offset and register flipped in order to switch easily between simulator and hardware
      sw   $3, -4($20)
@@ -94,7 +94,7 @@ arithmetic:
      sw   $8, -24($20)
      sw   $26, -48($20)
      
-     beq   $16, $0, arithmetic  
+     beq   $14, $0, arithmetic
      
 
 
