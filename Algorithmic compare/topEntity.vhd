@@ -18,7 +18,7 @@ END topEntity;
 
 ARCHITECTURE behaviour OF topEntity IS
 	
-	component processor
+	component processor_alg
 		PORT(
 			address_bus	: OUT std_logic_vector(31 DOWNTO 0);
 			databus_in	: IN  std_logic_vector(31 DOWNTO 0);
@@ -45,7 +45,7 @@ ARCHITECTURE behaviour OF topEntity IS
 	SIGNAL write 		: std_logic;
 
 	BEGIN
-		proc : processor
+		proc : processor_alg
 		PORT MAP(
 				address_bus => address_bus,
 				databus_in	=> databus1,
