@@ -194,10 +194,8 @@ BEGIN
                             WHEN F_divu =>
                                 state <= execute;
                                 if shift_cnt = 0 then   -- set parameters in first cycle
-                                    --remainder_LO:= unsigned(operand1a);
-                                    --divisor     := unsigned(operand2a);
-                                    remainder_LO:= to_unsigned(16#FFFFFFFF#,32);
-                                    divisor     := to_unsigned(16#FFFFFFFF#,32);
+                                    remainder_LO:= unsigned(operand1a);
+                                    divisor     := unsigned(operand2a);
                                     quotient    := (OTHERS => '0');
                                     remainder_HI:= (OTHERS => '0');                               
                                 end if;
