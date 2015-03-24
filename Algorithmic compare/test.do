@@ -12,6 +12,10 @@ add wave -position end  sim:/topentity/proc1/state
 add wave -position end  sim:/topentity/proc1/reg
 add wave -position end  sim:/topentity/proc1/reg_LO
 add wave -position end  sim:/topentity/proc1/reg_HI
+add wave -position end  sim:/topentity/proc2/state
+add wave -position end  sim:/topentity/proc2/reg
+add wave -position end  sim:/topentity/proc2/reg_LO
+add wave -position end  sim:/topentity/proc2/reg_HI
 add wave -position end  sim:/topentity/mem/mem
 
 radix signal sim:/topentity/address_mem hexadecimal
