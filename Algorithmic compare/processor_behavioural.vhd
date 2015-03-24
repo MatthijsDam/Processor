@@ -89,7 +89,7 @@ BEGIN
 
 
             
-        ELSIF rising_edge(clk) THEN
+        ELSIF rising_edge(clk)  AND enable = '1'  THEN
             CASE state IS
                 WHEN fetch =>
                     --
