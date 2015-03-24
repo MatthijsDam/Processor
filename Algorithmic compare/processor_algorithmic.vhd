@@ -7,6 +7,7 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+use IEEE.std_logic_signed.all;
 USE work.ALL;
 USE instruction_decode_defs.ALL;
 
@@ -16,14 +17,14 @@ ENTITY processor_alg IS
         address_bus     : OUT std_logic_vector(31 DOWNTO 0);
         databus_in      : IN  std_logic_vector(31 DOWNTO 0);
         databus_out     : OUT std_logic_vector(31 DOWNTO 0);
-        write            : OUT std_logic;
+        write           : OUT std_logic;
         reset           : IN  std_logic;
         clk             : IN  std_logic
     );
 END processor_alg;
 
 ARCHITECTURE behaviour OF processor_alg IS
-    TYPE fsm_state_t IS (fetch, execute, mem_read,mem_write);
+    TYPE fsm_state_t IS (fetch, decode, execute, mem_read,mem_write);
     SIGNAL state : fsm_state_t;  
       
     TYPE reg_bank_t IS ARRAY (0 TO 31) OF std_logic_vector(31 DOWNTO 0); 
@@ -31,13 +32,16 @@ ARCHITECTURE behaviour OF processor_alg IS
          ("00000000000000000000000000000000",
           OTHERS => "00000000000000000000000000000000"
           );
+    SIGNAL reg_LO, reg_HI     : std_logic_vector(31 DOWNTO 0);      --TODO: kunnen dit allemaal variabelen zijn? 
           
-    SIGNAL reg_LO, reg_HI : std_logic_vector(31 DOWNTO 0);
 
-    
+
+     Function sra_f(inp : signed) return signed is
+	    Begin
+		    return inp(inp'length-1) & inp(inp'length-1 downto 1);
+	    End sra_f;
+
 BEGIN
-
-
     PROCESS(clk,reset)
         VARIABLE pc                 : INTEGER := 0;
         VARIABLE instruction        : std_logic_vector(31 DOWNTO 0);
@@ -50,16 +54,26 @@ BEGIN
         
         VARIABLE operand1           : std_logic_vector(31 DOWNTO 0);
         VARIABLE operand2           : std_logic_vector(31 DOWNTO 0);
+        VARIABLE operand1a          : signed(31 DOWNTO 0);
+        VARIABLE operand2a          : signed(31 DOWNTO 0);
+
         
         VARIABLE funct              : std_logic_vector(5 DOWNTO 0);
 
-        VARIABLE imm                : std_logic_vector(31 DOWNTO 0);
+        VARIABLE imm                : std_logic_vector(15 DOWNTO 0);
         VARIABLE target             : std_logic_vector(25 DOWNTO 0);
-        VARIABLE temp64             : std_logic_vector(63 DOWNTO 0);
-        VARIABLE temp_pc            : std_logic_vector(31 DOWNTO 0);  
-        
+        VARIABLE temp_pc            : std_logic_vector(31 DOWNTO 0); 
+
+        VARIABLE partial_hi         : signed(32 DOWNTO 0);  -- help register for mult operation
+        VARIABLE shift_cnt          : INTEGER RANGE 0 TO 31;
+
+        VARIABLE quotient           : signed(31 DOWNTO 0); 
+        VARIABLE divisor            : signed(31 DOWNTO 0); 
+        VARIABLE remainder          : signed(32 DOWNTO 0);
+
         VARIABLE address_temp       : std_logic_vector(31 DOWNTO 0);
-        VARIABLE data_temp          : std_logic_vector(31 DOWNTO 0);      
+        VARIABLE data_temp          : std_logic_vector(31 DOWNTO 0);  
+    
 
     -- A read operation has 1 clock cycle delay
     PROCEDURE memory_read(pc : IN INTEGER) IS
@@ -85,7 +99,11 @@ BEGIN
             write           <= '0';
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
             address_bus     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
-
+            partial_hi      := (OTHERS => '0'); -- zero partial hi
+            shift_cnt       := 0;
+            quotient        := (OTHERS => '0');
+            remainder       := (OTHERS => '0');
+            divisor         := (OTHERS => '0');
 
             
         ELSIF rising_edge(clk) THEN
@@ -99,11 +117,11 @@ BEGIN
                     -- Increase program counter
                     pc := pc+4;
 
-                    state <= execute;
+                    state <= decode;
 
-                WHEN execute =>
+                WHEN decode =>
                     instruction := databus_in;
-                    state       <= fetch; 
+                    state       <= execute; 
                   
                     -- Common
                     opcode      := instruction(31 DOWNTO 26);
@@ -117,14 +135,18 @@ BEGIN
                     funct       := instruction( 5 DOWNTO  0);
                     -----------------------------------------
                     -- One immediate (I-Type):
-                    imm         := std_logic_vector(resize(signed(instruction(15 DOWNTO 0)),32));
+                    imm         := std_logic_vector(signed(instruction(15 DOWNTO 0)));
                     -----------------------------------------
                     -- Jump (J-Type):
                     target      := instruction(25 DOWNTO 0);
                     -----------------------------------------
                     operand1    := reg(src);
                     operand2    := reg(src_tgt);
-                    
+                    operand1a   := signed(operand1);
+                    operand2a   := signed(operand2);
+                     
+                WHEN execute =>  
+                    state <= fetch;
                     -- Decoding and execution
                     CASE opcode IS                        
                      -- Arithmetic registers operation or nop
@@ -137,16 +159,62 @@ BEGIN
                                 reg(dst) <= std_logic_vector( signed(operand1) + signed(operand2) ); 
                             -- Arithmetic DIVU
                             WHEN F_divu =>
-                                reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) );
-                                reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) );
+                                state <= execute;
+                                if shift_cnt = 0 then
+                                    remainder(31 downto 0)   := signed(reg(src));
+                                    divisor     := signed(reg(src_tgt));
+                                    quotient    := (OTHERS => '0');                               
+                                end if;
+                                remainder := remainder(31 downto 0) & '0';
+                                if remainder < divisor then
+                                    quotient := quotient(30 downto 0) & '1';
+                                    remainder := remainder - divisor;
+                                else
+                                    quotient := quotient(30 downto 0) & '0';
+                                end if;
+                                
+                                
+                               -- reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) ); -- old behavioral code
+                               --reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) ); -- old behavioral code
+                                shift_cnt   := shift_cnt + 1;
+                                if shift_cnt = 31 then
+                                    reg_HI      <= std_logic_vector(remainder(31 downto 0));
+                                    reg_LO      <= std_logic_vector(quotient);
+                                    quotient    := (OTHERS => '0');  
+                                    shift_cnt   := 0;   
+                                    state       <= fetch;                       
+                                end if;
                             -- Arithmetic MULT
-                            WHEN F_mult =>
-                                 temp64 := std_logic_vector( signed(operand1) * signed(operand2) ); 
-                                 reg_HI <= temp64(63 DOWNTO 32); 
-                                 reg_LO <= temp64(31 DOWNTO 0);
+                            WHEN F_mult =>                    
+                                -- operand1a is multiplicand, operand2a is multiplier                                                                                                                                                      
+                                if operand2a(0) = '1' then
+                                    if shift_cnt = 31 then
+                                        partial_hi := partial_hi + (not operand1a(31) & not operand1a) + 1; -- last cycle, carry in becomes one               
+                                    else 
+                                        partial_hi := partial_hi + (operand1a(31) & operand1a);
+                                    end if;
+                                end if;
+
+
+                                reg_LO         <= partial_hi(0) & reg_LO(31 downto 1); -- shift new partial_hi product bit into reg lo
+                                partial_hi     := sra_f(partial_hi); -- shift partial_hi to next position
+                                operand2a      := sra_f(operand2a); -- shift to the next bit multiplier - sign extended                                            
+                                
+                                state <= execute;
+                                if shift_cnt = 31 then  -- mult operation done
+                                    state          <= fetch;
+                                    reg_HI         <= std_logic_vector(partial_hi(31 downto 0));
+                                    partial_hi     := (OTHERS => '0');
+                                    shift_cnt := 0;
+                                else
+                                    shift_cnt := shift_cnt + 1;
+                                end if;
+
                             -- Arithmetic SUB
                             WHEN F_sub =>
-                                 reg(dst) <= std_logic_vector( signed(operand1) - signed(operand2) );                                 
+                            -- temp_pc := signed(not operand2)+1; 
+                                 reg(dst) <= std_logic_vector( signed(operand1) + signed(not operand2) + 1 );
+                                                                  
                             -- Logic AND
                             WHEN F_and =>      
                                  reg(dst) <= operand1 AND operand2;                                      
@@ -175,7 +243,7 @@ BEGIN
                         reg(src_tgt) <= operand1 AND imm;
                      -- OR immediate operation
                      WHEN Ior =>   
-                        reg(src_tgt) <= operand1 OR imm;
+                        reg(src_tgt) <= operand1 OR std_logic_vector(resize(unsigned(imm),32));
                      -- JUMP immediate operation
                      WHEN Jjump =>
                        temp_pc  := std_logic_vector(to_unsigned(pc,32));
@@ -192,7 +260,7 @@ BEGIN
                         END IF;  
                      -- LUI immediate operation 
                      WHEN Ilui => 
-                        reg(dst) <= std_logic_vector(unsigned(imm) sll 16);
+                        reg(src_tgt) <= std_logic_vector(unsigned(imm) ) & "0000000000000000";
                      -- Load word  LW memory immediate operation
                      WHEN Ilw =>
                         memory_read(to_integer(signed(operand1) + signed(imm)));
