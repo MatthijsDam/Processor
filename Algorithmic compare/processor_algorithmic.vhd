@@ -67,9 +67,11 @@ BEGIN
         VARIABLE partial_hi         : signed(32 DOWNTO 0);  -- help register for mult operation
         VARIABLE shift_cnt          : INTEGER RANGE 0 TO 31;
 
-        VARIABLE quotient           : signed(31 DOWNTO 0); 
-        VARIABLE divisor            : signed(31 DOWNTO 0); 
-        VARIABLE remainder          : signed(32 DOWNTO 0);
+        VARIABLE quotient           : unsigned(31 DOWNTO 0); 
+        VARIABLE divisor            : unsigned(31 DOWNTO 0); 
+        VARIABLE remainder_HI       : unsigned(31 DOWNTO 0);
+        VARIABLE remainder_LO       : unsigned(31 DOWNTO 0);
+        VARIABLE adder_res          : unsigned(32 DOWNTO 0);
 
         VARIABLE address_temp       : std_logic_vector(31 DOWNTO 0);
         VARIABLE data_temp          : std_logic_vector(31 DOWNTO 0);  
@@ -102,8 +104,10 @@ BEGIN
             partial_hi      := (OTHERS => '0'); -- zero partial hi
             shift_cnt       := 0;
             quotient        := (OTHERS => '0');
-            remainder       := (OTHERS => '0');
+            remainder_HI    := (OTHERS => '0');
+            remainder_LO    := (OTHERS => '0');
             divisor         := (OTHERS => '0');
+            adder_res       := (OTHERS => '0'); -- could probably be combined with partial hi
 
             
         ELSIF rising_edge(clk) THEN
@@ -158,33 +162,6 @@ BEGIN
                             -- Arithmetic ADD
                             WHEN F_add =>
                                 reg(dst) <= std_logic_vector( signed(operand1) + signed(operand2) ); 
-                            -- Arithmetic DIVU
-                            WHEN F_divu =>
-                                state <= execute;
-                                if shift_cnt = 0 then
-                                    remainder(31 downto 0)   := signed(reg(src));
-                                    divisor     := signed(reg(src_tgt));
-                                    quotient    := (OTHERS => '0');                               
-                                end if;
-                                remainder := remainder(31 downto 0) & '0';
-                                if remainder < divisor then
-                                    quotient := quotient(30 downto 0) & '1';
-                                    remainder := remainder - divisor;
-                                else
-                                    quotient := quotient(30 downto 0) & '0';
-                                end if;
-                                
-                                
-                               -- reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) ); -- old behavioral code
-                               --reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) ); -- old behavioral code
-                                shift_cnt   := shift_cnt + 1;
-                                if shift_cnt = 31 then
-                                    reg_HI      <= std_logic_vector(remainder(31 downto 0));
-                                    reg_LO      <= std_logic_vector(quotient);
-                                    quotient    := (OTHERS => '0');  
-                                    shift_cnt   := 0;   
-                                    state       <= fetch;                       
-                                end if;
                             -- Arithmetic MULT
                             WHEN F_mult =>                    
                                 -- operand1a is multiplicand, operand2a is multiplier                                                                                                                                                      
@@ -210,7 +187,48 @@ BEGIN
                                 else
                                     shift_cnt := shift_cnt + 1;
                                 end if;
-
+                                
+                                
+                                
+                            -- Arithmetic DIVU
+                            WHEN F_divu =>
+                                state <= execute;
+                                if shift_cnt = 0 then   -- set parameters in first cycle
+                                    --remainder_LO:= unsigned(operand1a);
+                                    --divisor     := unsigned(operand2a);
+                                    remainder_LO:= to_unsigned(16#FFFFFFFF#,32);
+                                    divisor     := to_unsigned(16#FFFFFFFF#,32);
+                                    quotient    := (OTHERS => '0');
+                                    remainder_HI:= (OTHERS => '0');                               
+                                end if;
+                                
+                                remainder_HI    := remainder_HI(30 downto 0) & remainder_LO(31);
+                                remainder_LO    := remainder_LO(30 downto 0) & 'U';
+                                
+                                adder_res       := resize((remainder_HI),33) + (not divisor(31) & (not divisor)) + 1;
+                                
+                                if adder_res(32)='0' then
+                                    remainder_HI := adder_res(31 downto 0);
+                                    quotient := quotient(30 downto 0) & '1';
+                                else
+                                    quotient := quotient(30 downto 0) & '0';                                
+                                end if;   
+                                
+                               -- reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) ); -- old behavioral code
+                               -- reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) ); -- old behavioral code
+                                
+                                if shift_cnt = 31 then
+                                    reg_HI      <= std_logic_vector(remainder_HI(31 downto 0));
+                                    reg_LO      <= std_logic_vector(quotient);
+                                    quotient    := (OTHERS => '0');  
+                                    shift_cnt   := 0;   
+                                    state       <= fetch;                       
+                                end if;
+                                shift_cnt := shift_cnt + 1; 
+                                
+                                
+                                
+                                
                             -- Arithmetic SUB
                             WHEN F_sub =>
                             -- temp_pc := signed(not operand2)+1; 
@@ -241,7 +259,7 @@ BEGIN
                         reg(src_tgt) <= std_logic_vector(signed(operand1) + signed(imm));
                      -- AND immediate operation
                      WHEN Iand =>
-                        reg(src_tgt) <= operand1 AND imm;
+                        reg(src_tgt) <= operand1 AND std_logic_vector(resize(unsigned(imm),32));
                      -- OR immediate operation
                      WHEN Ior =>   
                         reg(src_tgt) <= operand1 OR std_logic_vector(resize(unsigned(imm),32));
