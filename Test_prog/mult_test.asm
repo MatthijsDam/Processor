@@ -37,12 +37,25 @@ main:
     # 31:               NOT USED
 
      #1registers used for arithmetic operations
-     ori $2,$0, 10  # register 2 and 3 are used as input registers for the arithmetic operations
-     ori $3,$0, -10
-     mult $2, $3
+     ori $2,$0, 0x80000000  # register 2 and 3 are used as input registers for the arithmetic operations
+     ori $3,$0, 0x7FFFFFFF
+     mult $2, $2
      mfhi $4
      mflo $5
-	 mult $3, $2
-	 mfhi $6
+     mult $3, $3
+     mfhi $6
      mflo $7
+     mult $2, $3
+     mfhi $8
+     mflo $9
+     mult $3, $2
+     mfhi $10
+     mflo $11
+     
+     
+     
+
+
+
+
 ## End of file
