@@ -193,7 +193,7 @@ BEGIN
                         END IF;  
                      -- LUI immediate operation 
                      WHEN Ilui => 
-                        reg(dst) <= std_logic_vector(unsigned(imm) sll 16);
+                        reg(src_tgt) <= std_logic_vector(unsigned(imm) sll 16);
                      -- Load word  LW memory immediate operation
                      WHEN Ilw =>
                         memory_read(to_integer(signed(operand1) + signed(imm)));
