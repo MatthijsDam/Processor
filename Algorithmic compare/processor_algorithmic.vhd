@@ -305,7 +305,7 @@ BEGIN
                     -- Increase program counter
                     pc := pc+4;
                     
-                    state     <= execute;
+                    state     <= decode;
 				WHEN mem_write =>
 					state 	<= fetch;
             END CASE;
