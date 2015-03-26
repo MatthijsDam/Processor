@@ -1,6 +1,7 @@
 vcom definitions.vhd
 vcom processor_behavioural.vhd
 vcom processor_algorithmic.vhd
+vcom program.vhd
 vcom memory.vhd
 vcom compare.vhd
 vcom topEntity.vhd
