@@ -208,17 +208,14 @@ BEGIN
                                 remainder_HI    := remainder_HI(30 downto 0) & remainder_LO(31);
                                 remainder_LO    := remainder_LO(30 downto 0) & 'U';
                                 
-                                adder_res       := resize((remainder_HI),33) + (not divisor(31) & (not divisor)) + 1;
+                                adder_res       := (remainder_HI(31) & remainder_HI) + (not divisor(31) & (not divisor)) + 1; -- use alu adder
                                 
                                 if adder_res(32)='0' then
                                     remainder_HI := adder_res(31 downto 0);
                                     quotient := quotient(30 downto 0) & '1';
                                 else
                                     quotient := quotient(30 downto 0) & '0';                                
-                                end if;   
-                                
-                               -- reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) ); -- old behavioral code
-                               -- reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) ); -- old behavioral code
+                                end if; 
                                 
                                 if shift_cnt = 31 then
                                     reg_HI      <= std_logic_vector(remainder_HI(31 downto 0));
@@ -229,10 +226,6 @@ BEGIN
                                 else
                                     shift_cnt := shift_cnt + 1;                     
                                 end if;
-
-                                
-                                
-                                
                                 
                             -- Arithmetic SUB
                             WHEN F_sub =>
@@ -257,7 +250,7 @@ BEGIN
                             WHEN F_mflo => 
                                   reg(dst) <= reg_LO;
                             WHEN OTHERS =>     
-                        END CASE;
+                        END CASE; -- end case func
 
                      -- ADD immediate operation
                      WHEN Iadd =>
@@ -270,8 +263,8 @@ BEGIN
                         reg(src_tgt) <= operand1 OR std_logic_vector(resize(unsigned(imm),32));
                      -- JUMP immediate operation
                      WHEN Jjump =>
-                       temp_pc  := std_logic_vector(to_unsigned(pc,32));
-                       pc       := to_integer(unsigned(std_logic_vector'(temp_pc(31 DOWNTO 28) & target & "00")));
+                        temp_pc  := std_logic_vector(to_unsigned(pc,32));
+                        pc       := to_integer(unsigned(std_logic_vector'(temp_pc(31 DOWNTO 28) & target & "00")));
                      -- BEQ immediate operation
                      WHEN Ibeq =>   
                         IF operand1 = operand2 THEN
@@ -295,8 +288,8 @@ BEGIN
                         data_temp    := operand2;
 						state 		<= mem_write;
                         memory_write(address_temp,data_temp);
-                     WHEN OTHERS =>     
-                    END CASE;
+                     WHEN OTHERS =>   
+                    END CASE ; -- end case opcode
                 WHEN mem_read =>
                     reg(src_tgt)  <= databus_in;
                     
@@ -309,6 +302,7 @@ BEGIN
 				WHEN mem_write =>
 					state 	<= fetch;
             END CASE;
+            reg(0) <= (OTHERS => '0');
         END IF;
     END PROCESS;
 
