@@ -36,7 +36,7 @@ ARCHITECTURE behaviour OF processor_alg IS
           
 
 
-     Function sra_f(inp : signed) return signed is
+     Function sra_f(inp : unsigned) return unsigned is
 	    Begin
 		    return inp(inp'length-1) & inp(inp'length-1 downto 1);
 	    End sra_f;
@@ -54,8 +54,8 @@ BEGIN
         
         VARIABLE operand1           : std_logic_vector(31 DOWNTO 0);
         VARIABLE operand2           : std_logic_vector(31 DOWNTO 0);
-        VARIABLE operand1a          : signed(31 DOWNTO 0);
-        VARIABLE operand2a          : signed(31 DOWNTO 0);
+        VARIABLE operand1a          : unsigned(31 DOWNTO 0);
+        VARIABLE operand2a          : unsigned(31 DOWNTO 0);
 
         
         VARIABLE funct              : std_logic_vector(5 DOWNTO 0);
@@ -64,7 +64,9 @@ BEGIN
         VARIABLE target             : std_logic_vector(25 DOWNTO 0);
         VARIABLE temp_pc            : std_logic_vector(31 DOWNTO 0); 
 
-        VARIABLE partial_hi         : signed(32 DOWNTO 0);  -- help register for mult operation
+        VARIABLE partial_hi         : unsigned(32 DOWNTO 0);  -- help register for mult operation
+        VARIABLE multiplicand       : unsigned(32 DOWNTO 0);
+        VARIABLE carry_in           : unsigned( 0 DOWNTO 0);
         VARIABLE shift_cnt          : INTEGER RANGE 0 TO 31;
 
         VARIABLE quotient           : unsigned(31 DOWNTO 0); 
@@ -119,7 +121,7 @@ BEGIN
                     memory_read(pc);
 
                     -- Increase program counter
-                    pc := pc+4;
+                    pc := pc+4; 
 
                     state <= decode;
 
@@ -146,8 +148,8 @@ BEGIN
                     -----------------------------------------
                     operand1    := reg(src);
                     operand2    := reg(src_tgt);
-                    operand1a   := signed(operand1);
-                    operand2a   := signed(operand2);
+                    operand1a   := unsigned(operand1);
+                    operand2a   := unsigned(operand2);
                      
                 WHEN execute =>  
                     state <= fetch;
@@ -163,17 +165,21 @@ BEGIN
                                 reg(dst) <= std_logic_vector( signed(operand1) + signed(operand2) ); 
                             -- Arithmetic MULT
                             WHEN F_mult =>                    
-                                -- operand1a is multiplicand, operand2a is multiplier                                                                                                                                                      
+                                -- operand1a is multiplicand, operand2a is multiplier  
+                                carry_in := (OTHERS => '0');
                                 if operand2a(0) = '1' then
                                     if shift_cnt = 31 then
-                                        partial_hi := partial_hi + (not operand1a(31) & not operand1a) + 1; -- last cycle, carry in becomes one               
-                                    else 
-                                        partial_hi := partial_hi + (operand1a(31) & operand1a);
+                                        carry_in := (OTHERS => '1');
+                                        operand1a := not operand1a; -- invert if last cycle
                                     end if;
-                                end if;
+                                    multiplicand := (operand1a(31) & operand1a); -- sign extension by one bits
+                                else 
+                                    multiplicand := (others => '0'); -- sign extension by two bits
+                                end if;                                         
+                                
+                                partial_hi := partial_hi + multiplicand + carry_in; -- use alu adder ( 33 bits with carry in and out)
 
-
-                                reg_LO         <= partial_hi(0) & reg_LO(31 downto 1); -- shift new partial_hi product bit into reg lo
+                                reg_LO         <= partial_hi(0) & reg_LO(31 downto 1); -- shift new partial_hi product bit into reg_LO
                                 partial_hi     := sra_f(partial_hi); -- shift partial_hi to next position
                                 operand2a      := sra_f(operand2a); -- shift to the next bit multiplier - sign extended                                            
                                 
@@ -219,9 +225,11 @@ BEGIN
                                     reg_LO      <= std_logic_vector(quotient);
                                     quotient    := (OTHERS => '0');  
                                     shift_cnt   := 0;   
-                                    state       <= fetch;                       
+                                    state       <= fetch;   
+                                else
+                                    shift_cnt := shift_cnt + 1;                     
                                 end if;
-                                shift_cnt := shift_cnt + 1; 
+
                                 
                                 
                                 
@@ -239,7 +247,7 @@ BEGIN
                                  reg(dst) <= operand1 OR operand2;                                 
                             -- Logic XOR
                             WHEN F_xor =>
-                                 reg(dst) <= operand1 XOR operand2;                                 
+                                 reg(dst) <= (operand1 AND (not operand2)) OR ((not operand1) AND operand2) ;                                 
                             -- NOP "operation"
                             WHEN F_nop =>
                             -- MFHI move from $HI to dst register
