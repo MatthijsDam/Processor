@@ -9,16 +9,16 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.ALL;
 
-ENTITY topEntity_bhv IS
+ENTITY topEntity_alg IS
 	PORT(
 		reset 	: IN std_logic;
 		clk		: IN std_logic
 	);
-END topEntity_bhv;
+END topEntity_alg;
 
-ARCHITECTURE behaviour OF topEntity_bhv IS
+ARCHITECTURE behaviour OF topEntity_alg IS
 	
-	component processor
+	component processor_alg
 		PORT(
 			address_bus	: OUT std_logic_vector(31 DOWNTO 0);
 			databus_in	: IN  std_logic_vector(31 DOWNTO 0);
@@ -45,7 +45,7 @@ ARCHITECTURE behaviour OF topEntity_bhv IS
 	SIGNAL write 		: std_logic;
 
 	BEGIN
-		proc : processor_bhv
+		proc : processor_alg
 		PORT MAP(
 				address_bus => address_bus,
 				databus_in	=> databus1,
