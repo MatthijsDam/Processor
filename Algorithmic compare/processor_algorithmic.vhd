@@ -56,7 +56,8 @@ BEGIN
         VARIABLE operand2           : std_logic_vector(31 DOWNTO 0);
         VARIABLE operand1a          : unsigned(31 DOWNTO 0);
         VARIABLE operand2a          : unsigned(31 DOWNTO 0);
-
+        VARIABLE reg_HI_internal    : std_logic_vector(31 DOWNTO 0);
+        VARIABLE reg_LO_internal    : std_logic_vector(31 DOWNTO 0);
         
         VARIABLE funct              : std_logic_vector(5 DOWNTO 0);
 
@@ -103,6 +104,9 @@ BEGIN
             write           <= '0';
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
             address_bus     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
+
+            reg_LO          <= (OTHERS => '0');
+            reg_HI          <= (OTHERS => '0');            
             partial_hi      := (OTHERS => '0'); -- zero partial hi
             shift_cnt       := 0;
             quotient        := (OTHERS => '0');
@@ -166,6 +170,11 @@ BEGIN
                             -- Arithmetic MULT
                             WHEN F_mult =>                    
                                 -- operand1a is multiplicand, operand2a is multiplier  
+                                reg_HI_internal := reg_HI;
+                                if shift_cnt = 0 then 
+                                    reg_HI_internal := (OTHERS => '0');            
+                                end if;
+                                
                                 carry_in := (OTHERS => '0');
                                 if operand2a(0) = '1' then
                                     if shift_cnt = 31 then
@@ -177,17 +186,16 @@ BEGIN
                                     multiplicand := (others => '0'); -- sign extension by two bits
                                 end if;                                         
                                 
-                                partial_hi := partial_hi + multiplicand + carry_in; -- use alu adder ( 33 bits with carry in and out)
-
+                                partial_hi     := (reg_HI_internal(31) & unsigned(reg_HI_internal)) + multiplicand + carry_in; -- use alu adder ( 33 bits with carry in and out)
+                                
+                                reg_HI         <= std_logic_vector(partial_hi(32 downto 1));
                                 reg_LO         <= partial_hi(0) & reg_LO(31 downto 1); -- shift new partial_hi product bit into reg_LO
-                                partial_hi     := sra_f(partial_hi); -- shift partial_hi to next position
+                                --partial_hi     := sra_f(partial_hi); -- shift partial_hi to next position
                                 operand2a      := sra_f(operand2a); -- shift to the next bit multiplier - sign extended                                            
                                 
-                                state <= execute;
+                                state <= execute;                                
                                 if shift_cnt = 31 then  -- mult operation done
-                                    state          <= fetch;
-                                    reg_HI         <= std_logic_vector(partial_hi(31 downto 0));
-                                    partial_hi     := (OTHERS => '0');
+                                    state     <= fetch;
                                     shift_cnt := 0;
                                 else
                                     shift_cnt := shift_cnt + 1;
@@ -195,32 +203,40 @@ BEGIN
                                 
                                 
                                 
-                            -- Arithmetic DIVU
-                            WHEN F_divu =>
+                            -- Arithmetic DIVU (restoring division algorithm)
+                            WHEN F_divu => 
+                                reg_LO_internal := reg_LO; -- dividend at start, quotient at end
+                                reg_HI_internal := reg_HI; -- 0 at start, remainder at end
                                 state <= execute;
                                 if shift_cnt = 0 then   -- set parameters in first cycle
-                                    remainder_LO:= unsigned(operand1a);
+                                    reg_LO_internal:= operand1;
                                     divisor     := unsigned(operand2a);
-                                    quotient    := (OTHERS => '0');
-                                    remainder_HI:= (OTHERS => '0');                               
+                                    --quotient    := (OTHERS => '0');
+                                    reg_HI_internal:= (OTHERS => '0');           
                                 end if;
                                 
-                                remainder_HI    := remainder_HI(30 downto 0) & remainder_LO(31);
-                                remainder_LO    := remainder_LO(30 downto 0) & 'U';
+                                reg_HI_internal := reg_HI_internal(30 downto 0) & reg_LO_internal(31);
+                                --remainder_HI    := remainder_HI(30 downto 0) & remainder_LO(31);
+                               -- reg_LO_internal := reg_LO(30 downto 0) & 'U';
+                                --remainder_LO    := remainder_LO(30 downto 0) & 'U';
                                 
-                                adder_res       := (remainder_HI(31) & remainder_HI) + (not divisor(31) & (not divisor)) + 1; -- use alu adder
+                                adder_res       := (reg_HI_internal(31) & unsigned(reg_HI_internal)) + (not divisor(31) & (not divisor)) + 1; -- use alu adder
                                 
                                 if adder_res(32)='0' then
-                                    remainder_HI := adder_res(31 downto 0);
-                                    quotient := quotient(30 downto 0) & '1';
+                                    reg_HI_internal := std_logic_vector(adder_res(31 downto 0));
+                                   -- quotient := quotient(30 downto 0) & '1';
+                                    reg_LO          <= reg_LO_internal(30 DOWNTO 0) & '1';
                                 else
-                                    quotient := quotient(30 downto 0) & '0';                                
+                                    reg_LO          <= reg_LO_internal(30 DOWNTO 0) & '0';
+                                   -- quotient := quotient(30 downto 0) & '0';                                
                                 end if; 
                                 
+                                reg_HI <= reg_HI_internal;
+                                
                                 if shift_cnt = 31 then
-                                    reg_HI      <= std_logic_vector(remainder_HI(31 downto 0));
-                                    reg_LO      <= std_logic_vector(quotient);
-                                    quotient    := (OTHERS => '0');  
+                                    --reg_HI      <= std_logic_vector(remainder_HI(31 downto 0));
+                                    --reg_LO      <= sd_logic_vector(quotient);
+                                   -- quotient    := (OTHERS => '0');  
                                     shift_cnt   := 0;   
                                     state       <= fetch;   
                                 else
@@ -307,5 +323,3 @@ BEGIN
     END PROCESS;
 
 END ARCHITECTURE;
-
-
