@@ -54,6 +54,7 @@ BEGIN
         
         VARIABLE funct              : std_logic_vector(5 DOWNTO 0);
 
+        VARIABLE imm16              : std_logic_vector(15 DOWNTO 0);
         VARIABLE imm                : std_logic_vector(31 DOWNTO 0);
         VARIABLE target             : std_logic_vector(25 DOWNTO 0);
         VARIABLE temp64             : std_logic_vector(63 DOWNTO 0);
@@ -118,7 +119,8 @@ BEGIN
                     funct       := instruction( 5 DOWNTO  0);
                     -----------------------------------------
                     -- One immediate (I-Type):
-                    imm         := std_logic_vector(resize(signed(instruction(15 DOWNTO 0)),32));
+                    imm16       := instruction(15 DOWNTO 0);
+                    imm         := std_logic_vector(resize(signed(imm16),32));
                     -----------------------------------------
                     -- Jump (J-Type):
                     target      := instruction(25 DOWNTO 0);
@@ -173,10 +175,10 @@ BEGIN
                         reg(src_tgt) <= std_logic_vector(signed(operand1) + signed(imm));
                      -- AND immediate operation
                      WHEN Iand =>
-                        reg(src_tgt) <= operand1 AND imm;
+                        reg(src_tgt) <= operand1 AND std_logic_vector(resize(unsigned(imm16),32));
                      -- OR immediate operation
                      WHEN Ior =>   
-                        reg(src_tgt) <= operand1 OR imm;
+                        reg(src_tgt) <= operand1 OR std_logic_vector(resize(unsigned(imm16),32));
                      -- JUMP immediate operation
                      WHEN Jjump =>
                        temp_pc  := std_logic_vector(to_unsigned(pc,32));
