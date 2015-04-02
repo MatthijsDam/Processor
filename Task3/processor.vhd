@@ -26,8 +26,12 @@ ARCHITECTURE behaviour OF processor IS
 
 	component datapath
 		PORT(
-		alu_sel     	: IN  alu_sel_t;
+		address_bus     : OUT std_logic_vector(31 DOWNTO 0);
 		databus_out		: OUT std_logic_vector(31 DOWNTO 0);
+		pcwrite 		: IN  std_logic;
+		alu_srca 		: IN  std_logic;
+		alu_srcb 		: IN  std_logic;
+		alu_sel     	: IN  alu_sel_t;
 		reset 			: IN  std_logic;
 		clk 			: IN  std_logic;
 		);
@@ -35,8 +39,10 @@ ARCHITECTURE behaviour OF processor IS
 	
 	component controller
 		PORT(
-		address_bus     : OUT std_logic_vector(31 DOWNTO 0);
 		write           : OUT std_logic;
+		pcwrite 		: OUT std_logic;
+		alu_srca 		: OUT std_logic;
+		alu_srcb 		: OUT std_logic;
 		alu_sel 		: OUT alu_sel_t;
 		reset 			: IN  std_logic;
 		clk 			: IN  std_logic;
