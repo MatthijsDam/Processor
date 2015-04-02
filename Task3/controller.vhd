@@ -13,9 +13,11 @@ USE types.ALL;
 
 ENTITY controller IS
     PORT(
-		address_bus     : OUT std_logic_vector(31 DOWNTO 0);
 		write           : OUT std_logic;
+		alu_srca 		: OUT std_logic;
+		alu_srcb 		: OUT std_logic;
 		alu_sel 		: OUT alu_sel_t;
+		pcwrite 		: OUT std_logic;
 		reset 			: IN  std_logic;
 		clk 			: IN  std_logic;
 		);
