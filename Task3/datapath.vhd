@@ -35,6 +35,9 @@ ARCHITECTURE behaviour OF datapath IS
 BEGIN
     SIGNAL reg 				: reg_bank_t := 
 		("00000000000000000000000000000000",
+		"00000000000000000000000000000000",
+		"00000000000000000000000000000010",
+		"00000000000000000000000000000011",
 		OTHERS => "00000000000000000000000000000000"
 		);
     SIGNAL reg_LO, reg_HI	: std_logic_vector(31 DOWNTO 0); 
@@ -59,10 +62,6 @@ BEGIN
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
 
 		ELSIF rising_edge(clk) THEN
-			IF pcwrite ='1' THEN
-				pc <= alu_out;
-			END IF;
-
 			CASE iord IS
 				WHEN '0' =>
 					address_bus <= pc;
@@ -114,6 +113,10 @@ BEGIN
 
 			-- Store ALU output in a register
 			alu_reg 	<= alu_out;			
+			
+			IF pcwrite ='1' THEN
+				pc <= alu_out;
+			END IF;
 			
 		END IF;
 	END PROCESS;	
