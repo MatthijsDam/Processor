@@ -31,8 +31,6 @@ ENTITY datapath IS
 END datapath;
 
 ARCHITECTURE behaviour OF datapath IS
-
-BEGIN
     SIGNAL reg 				: reg_bank_t := 
 		("00000000000000000000000000000000",
 		"00000000000000000000000000000000",
@@ -58,7 +56,7 @@ BEGIN
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
 	BEGIN
 		IF reset='1' THEN 
-            pc              <= 0;
+            pc              <= (OTHERS => '0');
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
 
 		ELSIF rising_edge(clk) THEN
@@ -67,6 +65,7 @@ BEGIN
 					address_bus <= pc;
 				WHEN '1' =>
 					address_bus <= alu_out;
+				WHEN OTHERS =>
 			END CASE;
 			
 			IF irWrite ='1' THEN
@@ -82,21 +81,23 @@ BEGIN
 			funct_c		<= funct;		
 				
 			IF regWrite ='1' THEN
-				reg(dst) <= alu_reg; -- add multiplexer
+				reg(to_integer(unsigned(dst))) <= alu_reg; -- add multiplexer
 			END IF;
 			
 			CASE alu_srca IS
 				WHEN '0' =>
 					alu_inp0 := pc;
 				WHEN '1' =>
-					alu_inp0 := reg(src);
+					alu_inp0 := reg(to_integer(unsigned(src)));
+				WHEN OTHERS =>
 			END CASE;
 
 			CASE alu_srcb IS
 				WHEN '0' =>
-					alu_inp1 := 4;
+					alu_inp1 := std_logic_vector(to_unsigned(4,32));
 				WHEN '1' =>
-					alu_inp1 := reg(src_tgt);
+					alu_inp1 := reg(to_integer(unsigned(src_tgt)));
+				WHEN OTHERS =>
 			END CASE;	
 
 
@@ -107,8 +108,9 @@ BEGIN
 					alu_out := alu_inp0 AND alu_inp1;
 				WHEN alu_or =>
 					alu_out := alu_inp0 OR alu_inp1;
-				WHEN alu_xor	
+				WHEN alu_xor =>
 					alu_out := alu_inp0 XOR alu_inp1;
+				WHEN OTHERS =>
 			END CASE;	
 
 			-- Store ALU output in a register

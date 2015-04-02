@@ -66,10 +66,10 @@ ARCHITECTURE behaviour OF processor IS
 	SIGNAL alu_srca 	: std_logic;
 	SIGNAL alu_srcb		: std_logic;
 	SIGNAL alsu_sel		: std_logic;
-	SIGNAL irWrite 		: OUT std_logic;
-	SIGNAL regWrite		: OUT std_logic;
-	SIGNAL opcode_c 	: IN  std_logic_vector(5 DOWNTO 0);
-	SIGNAL funct_c		: IN  std_logic_vector(5 DOWNTO 0);
+	SIGNAL irWrite 		: std_logic;
+	SIGNAL regWrite		: std_logic;
+	SIGNAL opcode_c 	: std_logic_vector(5 DOWNTO 0);
+	SIGNAL funct_c		: std_logic_vector(5 DOWNTO 0);
 	
 BEGIN
 

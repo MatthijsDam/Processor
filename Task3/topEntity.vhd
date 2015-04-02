@@ -9,7 +9,7 @@ ENTITY topEntity_processor IS
 		reset 	: IN std_logic;
 		clk		: IN std_logic
 	);
-END topEntity_alg;
+END topEntity_processor;
 
 ARCHITECTURE behaviour OF topEntity_processor IS
 	

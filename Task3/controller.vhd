@@ -77,7 +77,10 @@ BEGIN
 										alu_sel 	<= alu_or;
 									WHEN F_xor =>	
 										alu_sel 	<= alu_xor;
+									WHEN others =>
 								END CASE;
+							WHEN others =>
+
 						END CASE;
 						
 						state 		<= write_back;
