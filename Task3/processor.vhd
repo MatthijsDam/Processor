@@ -26,26 +26,37 @@ ARCHITECTURE behaviour OF processor IS
 
 	component datapath
 		PORT(
-		address_bus     : OUT std_logic_vector(31 DOWNTO 0);
-		databus_out		: OUT std_logic_vector(31 DOWNTO 0);
-		pcwrite 		: IN  std_logic;
-		alu_srca 		: IN  std_logic;
-		alu_srcb 		: IN  std_logic;
-		alu_sel     	: IN  alu_sel_t;
-		reset 			: IN  std_logic;
-		clk 			: IN  std_logic;
+			clk 		: IN  std_logic;
+			reset		: IN  std_logic;
+			address_bus : OUT std_logic_vector(31 DOWNTO 0);
+			databus_out	: OUT std_logic_vector(31 DOWNTO 0);
+			databus_in 	: IN  std_logic_vector(31 DOWNTO 0);
+			pcwrite 	: IN  std_logic;
+			alu_srca 	: IN  std_logic;
+			alu_srcb 	: IN  std_logic;
+			alu_sel     : IN  alu_sel_t;
+			memRead		: IN  std_logic;
+			irWrite 	: IN  std_logic;
+			regWrite 	: IN  std_logic;
+			opcode_c	: OUT std_logic_vector(5 DOWNTO 0);
+			funct_c		: OUT std_logic_vector(5 DOWNTO 0)
 		);
 	END component;	
 	
 	component controller
 		PORT(
-		write           : OUT std_logic;
-		pcwrite 		: OUT std_logic;
-		alu_srca 		: OUT std_logic;
-		alu_srcb 		: OUT std_logic;
-		alu_sel 		: OUT alu_sel_t;
-		reset 			: IN  std_logic;
-		clk 			: IN  std_logic;
+			clk 			: IN  std_logic;
+			reset 			: IN  std_logic;
+			memWrite        : OUT std_logic;
+			memRead			: OUT std_logic;
+			pcwrite			: OUT std_logic;
+			alu_srca 		: OUT std_logic;
+			alu_srcb 		: OUT std_logic;
+			alu_sel 		: OUT alu_sel_t;
+			irWrite 		: OUT std_logic;
+			regWrite		: OUT std_logic;
+			opcode_c 		: IN  std_logic_vector(5 DOWNTO 0);
+			funct_c			: IN  std_logic_vector(5 DOWNTO 0)
 		);
 	END component;	
 	
