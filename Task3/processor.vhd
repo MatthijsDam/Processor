@@ -35,9 +35,9 @@ ARCHITECTURE behaviour OF processor IS
 			alu_srca 	: IN  std_logic;
 			alu_srcb 	: IN  std_logic;
 			alu_sel     : IN  alu_sel_t;
-			memRead		: IN  std_logic;
+			iord		: IN  std_logic;
 			irWrite 	: IN  std_logic;
-			regWrite 	: IN  std_logic;
+			regWrite 	: IN  std_logic;	
 			opcode_c	: OUT std_logic_vector(5 DOWNTO 0);
 			funct_c		: OUT std_logic_vector(5 DOWNTO 0)
 		);
@@ -47,8 +47,8 @@ ARCHITECTURE behaviour OF processor IS
 		PORT(
 			clk 			: IN  std_logic;
 			reset 			: IN  std_logic;
-			memWrite        : OUT std_logic;
-			memRead			: OUT std_logic;
+			write	        : OUT std_logic;
+			iord			: OUT std_logic;
 			pcwrite			: OUT std_logic;
 			alu_srca 		: OUT std_logic;
 			alu_srcb 		: OUT std_logic;
@@ -60,13 +60,50 @@ ARCHITECTURE behaviour OF processor IS
 		);
 	END component;	
 	
-	SIGNAL address_bus 	: std_logic_vector(31 DOWNTO 0);
-	SIGNAL write 		: std_logic;
 	SIGNAL alu_sel		: alu_sel_t;
-	SIGNAL clk 			: std_logic;
+	SIGNAL iord			: std_logic;
+	SIGNAL pcwrite		: std_logic;
+	SIGNAL alu_srca 	: std_logic;
+	SIGNAL alu_srcb		: std_logic;
+	SIGNAL alsu_sel		: std_logic;
+	SIGNAL irWrite 		: OUT std_logic;
+	SIGNAL regWrite		: OUT std_logic;
+	SIGNAL opcode_c 	: IN  std_logic_vector(5 DOWNTO 0);
+	SIGNAL funct_c		: IN  std_logic_vector(5 DOWNTO 0);
 	
 BEGIN
-		
+
+	contr : controller
+	PORT MAP(
+		clk => clk,
+		reset => reset,
+		write => write,
+		iord => iord,
+		pcwrite => pcwrite,
+		alu_srca => alu_srca,
+		alu_srcb => alu_srcb,
+		alu_sel => alu_sel,
+		irWrite => irWrite,
+		regWrite => regWrite,
+		opcode_c => opcode_c,
+		funct_c => funct_c	
+	);
 	
-	
+	dtpath : datapath
+	PORT MAP(
+		clk => clk,
+		reset => reset,
+		iord => iord,
+		pcwrite => pcwrite,
+		alu_srca => alu_srca,
+		alu_srcb => alu_srcb,
+		alu_sel => alu_sel,
+		irWrite => irWrite,
+		regWrite => regWrite,
+		opcode_c => opcode_c,
+		funct_c => funct_c,
+		address_bus => address_bus,
+		databus_out => databus_out,
+		databus_in => databus_in
+	);	
 END ARCHITECTURE;
