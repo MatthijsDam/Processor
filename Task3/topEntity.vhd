@@ -35,16 +35,16 @@ ARCHITECTURE behaviour OF topEntity_processor IS
 	END component;
 
 	SIGNAL address_bus	: std_logic_vector(31 DOWNTO 0);
-	SIGNAL databus1		: std_logic_vector(31 DOWNTO 0);
-	SIGNAL databus2 	: std_logic_vector(31 DOWNTO 0);
+	SIGNAL proc_data_in	: std_logic_vector(31 DOWNTO 0);
+	SIGNAL mem_data_in 	: std_logic_vector(31 DOWNTO 0);
 	SIGNAL write 		: std_logic;
 
 	BEGIN
 		proc : processor
 		PORT MAP(
 				address_bus => address_bus,
-				databus_in	=> databus1,
-				databus_out => databus2,
+				databus_in	=> proc_data_in,
+				databus_out => mem_data_in,
 				write		=> write,
 				reset		=> reset,
 				clk			=> clk
@@ -53,8 +53,8 @@ ARCHITECTURE behaviour OF topEntity_processor IS
 		mem : memory
 		PORT MAP(
 				address_bus => address_bus,
-				databus_in	=> databus2,
-				databus_out => databus1,
+				databus_in	=> mem_data_in,
+				databus_out => proc_data_in,
 				write		=> write,
 				clk			=> clk
 				);

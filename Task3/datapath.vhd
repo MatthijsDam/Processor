@@ -24,9 +24,7 @@ ENTITY datapath IS
 		alu_sel     : IN  alu_sel_t;
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
-		regWrite 	: IN  std_logic;	
-		opcode_c	: OUT std_logic_vector(5 DOWNTO 0);
-		funct_c		: OUT std_logic_vector(5 DOWNTO 0)
+		regWrite 	: IN  std_logic
 		);
 END datapath;
 
@@ -50,7 +48,7 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL alu_reg			: std_logic_vector(31 DOWNTO 0);
 	
 BEGIN
-	PROCESS(clk) 
+	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
@@ -76,9 +74,7 @@ BEGIN
 				funct		<= databus_in(5 DOWNTO 0);
 			END IF;
 			
-			-- Controller values
-			opcode_c 	<= opcode;
-			funct_c		<= funct;		
+
 				
 			IF regWrite ='1' THEN
 				reg(to_integer(unsigned(dst))) <= alu_reg; -- add multiplexer
@@ -99,8 +95,7 @@ BEGIN
 					alu_inp1 := reg(to_integer(unsigned(src_tgt)));
 				WHEN OTHERS =>
 			END CASE;	
-
-
+			
 			CASE alu_sel IS
 				WHEN alu_add =>
 					alu_out := alu_inp0 + alu_inp1;
@@ -114,7 +109,7 @@ BEGIN
 			END CASE;	
 
 			-- Store ALU output in a register
-			alu_reg 	<= alu_out;			
+			alu_reg 	<= alu_out;	
 			
 			IF pcwrite ='1' THEN
 				pc <= alu_out;

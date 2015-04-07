@@ -16,6 +16,7 @@ ENTITY controller IS
     PORT(
 		clk 			: IN  std_logic;
 		reset 			: IN  std_logic;
+		databus_in 	: IN  std_logic_vector(31 DOWNTO 0);
 		write	        : OUT std_logic;
 		iord			: OUT std_logic;
 		pcwrite			: OUT std_logic;
@@ -23,9 +24,7 @@ ENTITY controller IS
 		alu_srcb 		: OUT std_logic;
 		alu_sel 		: OUT alu_sel_t;
 		irWrite 		: OUT std_logic;
-		regWrite		: OUT std_logic;
-		opcode_c 		: IN  std_logic_vector(5 DOWNTO 0);
-		funct_c			: IN  std_logic_vector(5 DOWNTO 0)
+		regWrite		: OUT std_logic
 		);
 END controller;
 
@@ -33,7 +32,7 @@ ARCHITECTURE behaviour OF controller IS
 	SIGNAL state 	: fsm_state_t;
 
 BEGIN
-		PROCESS(clk)
+		PROCESS(clk,reset)
 		BEGIN
 			IF reset='1' THEN 
 				state 		<= fetch;
@@ -64,11 +63,11 @@ BEGIN
 						regWrite 	<= '0';
 						pcwrite		<= '0';
 						
-						CASE opcode_c IS
+						CASE databus_in(31 DOWNTO 26) IS
 							WHEN Rtype =>
 								alu_srca	<= '1';
 								alu_srcb	<= '1';
-								CASE funct_c IS
+								CASE databus_in(5 DOWNTO 0) IS
 									WHEN F_add =>
 										alu_sel 	<= alu_add;
 									WHEN F_and =>
@@ -91,6 +90,7 @@ BEGIN
 						alu_srca	<= '0';
 						alu_srcb	<= '0';
 						pcwrite		<= '1';
+						alu_sel 	<= alu_add;
 						
 						state 		<= fetch;
 				END CASE;
