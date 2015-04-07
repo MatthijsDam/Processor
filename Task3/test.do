@@ -15,11 +15,11 @@ add wave -label "Proc_data_in" sim:/topentity_processor/proc_data_in
 add wave -label "Mem_data_in" sim:/topentity_processor/mem_data_in
 add wave -label "Mem write" sim:/topentity_processor/write
 
-add wave -label "state" sim:/topentity_processor/proc/contr/state 
-add wave -label "reg" sim:/topentity_processor/proc/dtpath/reg
-
 add wave -label "alu_sel" sim:/topentity_processor/proc/alu_sel
 add wave -label "alu_reg" sim:/topentity_processor/proc/dtpath/alu_reg
+
+add wave -label "state" sim:/topentity_processor/proc/contr/state 
+add wave -label "reg" sim:/topentity_processor/proc/dtpath/reg
 
 add wave -label "memory" sim:/topentity_processor/mem/mem
 

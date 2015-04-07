@@ -19,12 +19,14 @@ ENTITY datapath IS
 		databus_out	: OUT std_logic_vector(31 DOWNTO 0);
 		databus_in 	: IN  std_logic_vector(31 DOWNTO 0);
 		pcwrite 	: IN  std_logic;
-		alu_srca 	: IN  std_logic;
-		alu_srcb 	: IN  std_logic;
+		regDst		: IN  std_logic;
+		alu_srca 	: IN  alu_ina_t;
+		alu_srcb 	: IN  alu_inb_t;
 		alu_sel     : IN  alu_sel_t;
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
-		regWrite 	: IN  std_logic
+		regWrite 	: IN  std_logic;
+		memToReg 	: IN  std_logic
 		);
 END datapath;
 
@@ -46,53 +48,65 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL src_tgt			: std_logic_vector(4 DOWNTO 0);
 	SIGNAL dst				: std_logic_vector(4 DOWNTO 0);
 	SIGNAL alu_reg			: std_logic_vector(31 DOWNTO 0);
+	SIGNAL imm 				: std_logic_vector(31 DOWNTO 0);
 	
 BEGIN
 	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
+		
+		VARIABLE reg_dst	: Integer;
+		VARIABLE reg_inp	: std_logic_vector(31 DOWNTO 0);
 	BEGIN
 		IF reset='1' THEN 
             pc              <= (OTHERS => '0');
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
 
-		ELSIF rising_edge(clk) THEN
-			CASE iord IS
-				WHEN '0' =>
-					address_bus <= pc;
-				WHEN '1' =>
-					address_bus <= alu_out;
-				WHEN OTHERS =>
-			END CASE;
-			
+		ELSIF rising_edge(clk) THEN		
 			IF irWrite ='1' THEN
 				opcode      <= databus_in(31 DOWNTO 26);
 				src 		<= databus_in(25 DOWNTO 21);
 				src_tgt		<= databus_in(20 DOWNTO 16);
 				dst 		<= databus_in(15 DOWNTO 11);
 				funct		<= databus_in(5 DOWNTO 0);
+				imm 		<= std_logic_vector(resize(signed(databus_in(15 DOWNTO 0)),32));
 			END IF;
 			
-
-				
+			CASE regDst IS
+				WHEN '0' =>
+						reg_dst := to_integer(unsigned(dst)); 
+				WHEN '1' =>
+						reg_dst := to_integer(unsigned(src_tgt));
+				WHEN OTHERS =>
+			END CASE;
+			
 			IF regWrite ='1' THEN
-				reg(to_integer(unsigned(dst))) <= alu_reg; -- add multiplexer
+				CASE memToReg IS
+					WHEN '0' =>
+						reg(reg_dst) <= alu_reg;
+					WHEN '1' =>
+						reg(reg_dst) <= databus_in;
+					WHEN OTHERS =>
+				END CASE;
+				
 			END IF;
 			
 			CASE alu_srca IS
-				WHEN '0' =>
+				WHEN m_pc =>
 					alu_inp0 := pc;
-				WHEN '1' =>
+				WHEN m_reg =>
 					alu_inp0 := reg(to_integer(unsigned(src)));
 				WHEN OTHERS =>
 			END CASE;
 
 			CASE alu_srcb IS
-				WHEN '0' =>
+				WHEN m_pc4 =>
 					alu_inp1 := std_logic_vector(to_unsigned(4,32));
-				WHEN '1' =>
+				WHEN m_reg =>
 					alu_inp1 := reg(to_integer(unsigned(src_tgt)));
+				WHEN m_imm =>
+					alu_inp1 := imm;
 				WHEN OTHERS =>
 			END CASE;	
 			
@@ -114,6 +128,14 @@ BEGIN
 			IF pcwrite ='1' THEN
 				pc <= alu_out;
 			END IF;
+			
+			CASE iord IS
+				WHEN '0' =>
+					address_bus <= pc;
+				WHEN '1' =>
+					address_bus <= alu_out;
+				WHEN OTHERS =>
+			END CASE;
 			
 		END IF;
 	END PROCESS;	
