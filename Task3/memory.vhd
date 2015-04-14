@@ -34,10 +34,12 @@ ARCHITECTURE behaviour OF memory IS
 			IF to_integer(unsigned(address_bus(31 DOWNTO 2))) <= high_address THEN
 				address 	:=  to_integer(unsigned(address_bus(31 DOWNTO 2)));
 			END	IF;
-			databus_out <= mem(address);
+			
 			IF rising_edge(clk) THEN
 				IF write = '1' THEN
 					mem(address) <= databus_in;			
+				ELSE
+				    databus_out <= mem(address);
 				END IF;
 			END IF;
 		END PROCESS;

@@ -57,7 +57,7 @@ ARCHITECTURE behaviour OF topEntity_compare IS
 			write_bhv		: IN  std_logic;
 			write_alu		: IN  std_logic;
 			enable_bhv		: OUT std_logic;
-			clk             : IN  std_logic
+			reset           : IN  std_logic
 			);
 	END component;
 	
@@ -87,7 +87,7 @@ ARCHITECTURE behaviour OF topEntity_compare IS
 				write_bhv		=> write_bhv,
 				write_alu 		=> write_alu,
 				enable_bhv 		=> enable_bhv,
-				clk             => clk
+				reset           => reset
 				);
 				
 		proc : processor

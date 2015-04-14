@@ -33,9 +33,13 @@ END controller;
 
 ARCHITECTURE behaviour OF controller IS
 	SIGNAL state 	: fsm_state_t;
-
+    
 BEGIN
 		PROCESS(clk,reset)
+		VARIABLE flag_reg_write : std_logic;
+		VARIABLE flag_mem_to_reg : std_logic;
+		VARIABLE mem_write_flag : std_logic;
+		VARIABLE mem_read_flag : std_logic;
 		BEGIN
 			IF reset='1' THEN 
 				state 		<= fetch;
@@ -43,36 +47,43 @@ BEGIN
 				iord 		<= '0';
 				irWrite 	<= '0';
 				regWrite 	<= '0';
+				flag_reg_write:= '0';	
+				flag_mem_to_reg:= '0';			
+				mem_write_flag := '0';
+				mem_read_flag  := '0';
 				pcwrite		<= '0';
 				regDst		<= '0';
 				memToReg	<= '0';
 				alu_carry_in<= '0';
+				
 			ELSIF rising_edge(clk) THEN
 				CASE state IS
 					WHEN fetch =>
+						write 		<= '0';
 						iord 		<= '0';
 						irWrite 	<= '0';
 						regWrite 	<= '0';
 						pcwrite		<= '0';
+						memToReg    <= '0';
 						
 						state 		<= decode;
 					WHEN decode =>
-						iord 		<= '0';
 						irWrite 	<= '1';
-						regWrite 	<= '0';
-						pcwrite		<= '0';
-						
+																	
 						state 		<= execute;
 					WHEN execute =>
-						state 		<= write_back;
+						state 		<= mem_pc;
 						iord 		<= '-';
 						irWrite 	<= '0';
 						regWrite 	<= '0';
 						pcwrite		<= '0';
 						alu_carry_in<= '0';
-						
+						flag_reg_write := '1';
+						mem_write_flag := '0';
+						mem_read_flag := '0';
 						CASE databus_in(31 DOWNTO 26) IS
 							WHEN Rtype =>
+							
 								regDst 		<= '0';
 								alu_srca	<= m_reg;
 								alu_srcb	<= m_reg;
@@ -88,6 +99,8 @@ BEGIN
 										alu_sel 	<= alu_or;
 									WHEN F_xor =>	
 										alu_sel 	<= alu_xor;
+									WHEN F_nop =>
+									    alu_sel     <= alu_or;
 									WHEN OTHERS =>
 								END CASE;
 							
@@ -108,45 +121,58 @@ BEGIN
 								alu_srca	<= m_reg;
 								alu_srcb 	<= m_imm;
 								alu_sel		<= alu_or;
-	
+	                        WHEN Ilui =>
+	                            regDst      <= '1';
+	                            alu_srca    <= m_reg;
+	                            alu_srcb    <= m_imm_upper;
+	                            alu_sel     <= alu_or;
 
 							WHEN Ilw =>
+							    write 		<= '0';
 								regDst		<= '1';
 								alu_srca	<= m_reg;
 								alu_srcb 	<= m_imm;
 								alu_sel		<= alu_add;
 								iord 		<= '1';
+								mem_read_flag := '1';
+								--flag_mem_to_reg := '1';
 								
-								state 		<= mem_read;
+							WHEN Isw => 
+							    alu_srca	<= m_reg;
+								alu_srcb 	<= m_imm;
+								alu_sel		<= alu_add;
+							    iord 		<= '1';
+							    flag_reg_write := '0';
+								mem_write_flag := '1';
+								
+								
 							WHEN OTHERS =>
 
 						END CASE;
+										
+					WHEN mem_pc=>	
+					
+					    IF mem_read_flag = '1' THEN
+					        irWrite 	<= '0';
+					        memToReg 	<= '1';
+					    ELSIF mem_write_flag = '1' THEN
+					        write 		<= '1';
+					    END IF;
+					    
+					    alu_srca	<= m_pc;
+						alu_srcb	<= m_pc4;
+						pcwrite		<= '1';
+						alu_sel 	<= alu_add;
 						
-						
+						state       <= write_back;
 					WHEN write_back =>
-						regWrite 	<= '1';
-						memToReg 	<= '0';
-						
-						-- increase program counter
-						alu_srca	<= m_pc;
-						alu_srcb	<= m_pc4;
-						pcwrite		<= '1';
-						alu_sel 	<= alu_add;
-						iord		<= '0';
-						
-						state 		<= fetch;
-						
-					WHEN mem_read =>	
-						irWrite 	<= '1';
-						memToReg 	<= '1';
-						
-						-- increase program counter
-						alu_srca	<= m_pc;
-						alu_srcb	<= m_pc4;
-						pcwrite		<= '1';
-						alu_sel 	<= alu_add;
-						iord		<= '0';
-						
+                        pcwrite     <= '0';
+                        write 		<= '0';
+						IF flag_reg_write = '1' THEN -- bij instructies die naar reg schrijven ( _ (sw, jump, b))
+						    regWrite 	<= '1';
+						END IF;
+							
+						iord		<= '0';	
 						state 		<= fetch;
 				END CASE;
 			END IF;

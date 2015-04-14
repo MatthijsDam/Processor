@@ -62,11 +62,15 @@ BEGIN
 		VARIABLE reg_dst	: Integer;
 		VARIABLE reg_inp	: std_logic_vector(31 DOWNTO 0);
 	BEGIN
+	   
+	    
 		IF reset='1' THEN 
             pc              <= (OTHERS => '0');
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
-
+    
 		ELSIF rising_edge(clk) THEN		
+            databus_out <= reg(to_integer(unsigned(src_tgt)));
+
 			IF irWrite ='1' THEN
 				opcode      <= databus_in(31 DOWNTO 26);
 				src 		<= databus_in(25 DOWNTO 21);
@@ -84,7 +88,7 @@ BEGIN
 				WHEN OTHERS =>
 			END CASE;
 			
-			IF regWrite ='1' THEN
+			IF regWrite ='1' AND reg_dst /= 0 THEN
 				CASE memToReg IS
 					WHEN '0' =>
 						reg(reg_dst) <= alu_reg;
@@ -111,6 +115,8 @@ BEGIN
 				    alu_inp1 := not reg(to_integer(unsigned(src_tgt)));
 				WHEN m_imm =>
 					alu_inp1 := imm;
+                WHEN m_imm_upper=>
+                    alu_inp1 := std_logic_vector(unsigned(imm) sll 16);
 				WHEN OTHERS =>
 			END CASE;
 			
@@ -131,11 +137,14 @@ BEGIN
 			END CASE;	
 
 			-- Store ALU output in a register
-			alu_reg 	<= alu_out;
+			
+			
 			
 			
 			IF pcwrite ='1' THEN
 				pc <= alu_out;
+		    ELSE
+		        alu_reg 	<= alu_out;
 			END IF;
 			
 			CASE iord IS

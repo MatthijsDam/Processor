@@ -22,18 +22,20 @@ add wave -label "data bus alu" sim:/topentity_compare/data_bus_alu
 
 add wave -label "write mem" sim:/topentity_compare/write_mem
 add wave -label "write bhv" sim:/topentity_compare/write_bhv
+add wave -label "write alu" sim:/topentity_compare/write_alu
 
 add wave -label "enable bhv" sim:/topentity_compare/enable_bhv
+
+
+add wave -label "state bhv" sim:/topentity_compare/proc_bhv/state
+add wave -label "state alu" sim:/topentity_compare/proc/contr/state 
+
+add wave -label "memory" sim:/topentity_compare/mem/mem
 
 add wave -label "reg alu" sim:/topentity_compare/proc/dtpath/reg
 add wave -label "reg bhv" sim:/topentity_compare/proc_bhv/reg
 add wave -label "reg bhv low" sim:/topentity_compare/proc_bhv/reg_LO
 add wave -label "reg bhv high" sim:/topentity_compare/proc_bhv/reg_HI
-
-add wave -label "state" sim:/topentity_compare/proc/contr/state 
-add wave -label "reg" sim:/topentity_compare/proc/dtpath/reg
-
-add wave -label "memory" sim:/topentity_compare/mem/mem
 
 force clk 0,1 10ns -repeat 20ns
 force reset 1

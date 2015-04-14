@@ -40,7 +40,8 @@ BEGIN
 
 
     PROCESS(clk,reset)
-        VARIABLE pc                 : INTEGER := 0;
+        VARIABLE pc                 : INTEGER := -4;
+
         VARIABLE instruction        : std_logic_vector(31 DOWNTO 0);
        
         VARIABLE opcode             : std_logic_vector(5 DOWNTO 0);
@@ -96,9 +97,9 @@ BEGIN
                     --
                     -- Instruction fetch
                     -- 
+                    
                     memory_read(pc);
-
-                    -- Increase program counter
+                                   -- Increase program counter
                     pc := pc+4;
 
                     state <= execute;
@@ -203,22 +204,18 @@ BEGIN
                      -- Store word SW memory immediate operation
                      WHEN Isw => 
                         address_temp := std_logic_vector(signed(operand1) + signed(imm));
-                        data_temp    := operand2;
-						state 		<= mem_write;
+                        data_temp    := operand2;						
                         memory_write(address_temp,data_temp);
+                        state 		<= mem_write;
                      WHEN OTHERS =>     
                     END CASE;
                 WHEN mem_read =>
                     reg(src_tgt)  <= databus_in;
-                    
-                    -- Fetch
-                    memory_read(pc);
-                    -- Increase program counter
-                    pc := pc+4;
-                    
-                    state     <= execute;
+                                   
+                    state     <= fetch;
 				WHEN mem_write =>
-					state 	<= fetch;
+					                    
+                    state     <= fetch;
             END CASE;
         END IF;
     END PROCESS;
