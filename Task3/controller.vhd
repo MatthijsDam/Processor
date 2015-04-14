@@ -24,6 +24,7 @@ ENTITY controller IS
 		alu_srca 		: OUT alu_ina_t;
 		alu_srcb 		: OUT alu_inb_t;
 		alu_sel 		: OUT alu_sel_t;
+    	alu_carry_in    : OUT std_logic;
 		irWrite 		: OUT std_logic;
 		regWrite		: OUT std_logic;
 		memToReg		: OUT std_logic
@@ -76,6 +77,10 @@ BEGIN
 								CASE databus_in(5 DOWNTO 0) IS
 									WHEN F_add =>
 										alu_sel 	<= alu_add;
+										alu_carry_in<= '0';
+								    WHEN F_sub =>
+								        alu_sel 	<= alu_add;
+								        alu_carry_in<= '1';
 									WHEN F_and =>
 										alu_sel 	<= alu_and;
 									WHEN F_or =>	

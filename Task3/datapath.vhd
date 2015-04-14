@@ -23,6 +23,7 @@ ENTITY datapath IS
 		alu_srca 	: IN  alu_ina_t;
 		alu_srcb 	: IN  alu_inb_t;
 		alu_sel     : IN  alu_sel_t;
+		alu_carry_in: IN  std_logic;
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
 		regWrite 	: IN  std_logic;
@@ -54,7 +55,9 @@ BEGIN
 	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
+		VARIABLE carry_out  : std_logic;
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
+		VARIABLE temp_alu   : std_logic_vector(32 DOWNTO 0);
 		
 		VARIABLE reg_dst	: Integer;
 		VARIABLE reg_inp	: std_logic_vector(31 DOWNTO 0);
@@ -88,8 +91,7 @@ BEGIN
 					WHEN '1' =>
 						reg(reg_dst) <= databus_in;
 					WHEN OTHERS =>
-				END CASE;
-				
+				END CASE;	
 			END IF;
 			
 			CASE alu_srca IS
@@ -105,14 +107,20 @@ BEGIN
 					alu_inp1 := std_logic_vector(to_unsigned(4,32));
 				WHEN m_reg =>
 					alu_inp1 := reg(to_integer(unsigned(src_tgt)));
+				WHEN m_reg_invert =>
+				    alu_inp1 := not reg(to_integer(unsigned(src_tgt)));
 				WHEN m_imm =>
 					alu_inp1 := imm;
 				WHEN OTHERS =>
-			END CASE;	
+			END CASE;
+			
+				
 			
 			CASE alu_sel IS
 				WHEN alu_add =>
-					alu_out := alu_inp0 + alu_inp1;
+					temp_alu := std_logic_vector((alu_inp0(31)&alu_inp0) + (alu_inp1(31)&alu_inp1) + alu_carry_in);
+					carry_out:= temp_alu(32);
+					alu_out  := temp_alu(31 DOWNTO 0);
 				WHEN alu_and =>
 					alu_out := alu_inp0 AND alu_inp1;
 				WHEN alu_or =>
@@ -123,7 +131,8 @@ BEGIN
 			END CASE;	
 
 			-- Store ALU output in a register
-			alu_reg 	<= alu_out;	
+			alu_reg 	<= alu_out;
+			
 			
 			IF pcwrite ='1' THEN
 				pc <= alu_out;

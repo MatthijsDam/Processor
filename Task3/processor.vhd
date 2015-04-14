@@ -36,6 +36,7 @@ ARCHITECTURE behaviour OF processor IS
 			alu_srca 	: IN  alu_ina_t;
 			alu_srcb 	: IN  alu_inb_t;
 			alu_sel     : IN  alu_sel_t;
+			alu_carry_in: IN  std_logic;
 			iord		: IN  std_logic;
 			irWrite 	: IN  std_logic;
 			regWrite 	: IN  std_logic;
@@ -55,6 +56,7 @@ ARCHITECTURE behaviour OF processor IS
 			alu_srca 		: OUT alu_ina_t;
 			alu_srcb 		: OUT alu_inb_t;
 			alu_sel 		: OUT alu_sel_t;
+			alu_carry_in    : OUT std_logic;
 			irWrite 		: OUT std_logic;
 			regWrite		: OUT std_logic;
 			memToReg		: OUT std_logic
@@ -66,7 +68,7 @@ ARCHITECTURE behaviour OF processor IS
 	SIGNAL pcwrite		: std_logic;
 	SIGNAL alu_srca 	: alu_ina_t;
 	SIGNAL alu_srcb		: alu_inb_t;
-	SIGNAL alsu_sel		: std_logic;
+	SIGNAL alu_carry_in	: std_logic;
 	SIGNAL irWrite 		: std_logic;
 	SIGNAL regWrite		: std_logic;
 	SIGNAL regDst		: std_logic;
@@ -87,6 +89,7 @@ BEGIN
 		alu_srca 	=> alu_srca,
 		alu_srcb	=> alu_srcb,
 		alu_sel 	=> alu_sel,
+		alu_carry_in=> alu_carry_in,
 		irWrite 	=> irWrite,
 		regWrite 	=> regWrite,
 		memToReg 	=> memToReg
@@ -102,6 +105,7 @@ BEGIN
 		alu_srca 	=> alu_srca,
 		alu_srcb 	=> alu_srcb,
 		alu_sel 	=> alu_sel,
+		alu_carry_in=> alu_carry_in,
 		irWrite 	=> irWrite,
 		regWrite 	=> regWrite,
 		address_bus => address_bus,
