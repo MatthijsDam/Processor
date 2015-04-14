@@ -46,6 +46,7 @@ BEGIN
 				pcwrite		<= '0';
 				regDst		<= '0';
 				memToReg	<= '0';
+				alu_carry_in<= '0';
 			ELSIF rising_edge(clk) THEN
 				CASE state IS
 					WHEN fetch =>
@@ -68,6 +69,7 @@ BEGIN
 						irWrite 	<= '0';
 						regWrite 	<= '0';
 						pcwrite		<= '0';
+						alu_carry_in<= '0';
 						
 						CASE databus_in(31 DOWNTO 26) IS
 							WHEN Rtype =>
@@ -77,8 +79,7 @@ BEGIN
 								CASE databus_in(5 DOWNTO 0) IS
 									WHEN F_add =>
 										alu_sel 	<= alu_add;
-										alu_carry_in<= '0';
-								    WHEN F_sub =>
+									WHEN F_sub =>
 								        alu_sel 	<= alu_add;
 								        alu_carry_in<= '1';
 									WHEN F_and =>
