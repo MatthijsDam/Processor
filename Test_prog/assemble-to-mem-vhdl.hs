@@ -22,7 +22,7 @@ assemble inputfile outputfile = do
 	runMars "BinaryText" outputfile
 	runMars "SegmentWindow" (outputfile ++ "2")
 
-memsize = 2 -- 55
+memsize = 255
 header = printf "LIBRARY ieee;\nUSE ieee.std_logic_1164.ALL;\nUSE ieee.numeric_std.ALL;\nPACKAGE program IS\n\tCONSTANT low_address\t: INTEGER := 0; \n\tCONSTANT high_address\t: INTEGER := %d;\n\n\tTYPE mem_array IS ARRAY (low_address TO high_address) OF std_logic_vector(31 DOWNTO 0);\n\tCONSTANT program : mem_array := (\n" memsize
 footer = "\nOTHERS => \"00000000000000000000000000000000\");\n\nEND;\n"
 translateMars2VHDL str = header ++ (unlines $ map (printf "\"%s\",") (lines str)) ++ footer
