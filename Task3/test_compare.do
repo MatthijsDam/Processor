@@ -10,6 +10,8 @@ vcom memory.vhd
 vcom topEntity_compare.vhd
 vsim work.topEntity_compare
 
+add wave -label "Reset" sim:/topentity_compare/reset
+add wave -label "Clock" sim:/topentity_compare/clk
 add wave -label "address bus memory" sim:/topentity_compare/address_mem
 add wave -label "address bus bhv" sim:/topentity_compare/address_bus_bhv
 add wave -label "address bus alu" sim:/topentity_compare/address_bus_alu
