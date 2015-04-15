@@ -31,6 +31,7 @@ ARCHITECTURE behaviour OF processor IS
 			address_bus : OUT std_logic_vector(31 DOWNTO 0);
 			databus_out	: OUT std_logic_vector(31 DOWNTO 0);
 			databus_in 	: IN  std_logic_vector(31 DOWNTO 0);
+			pc_src      : IN pc_src_t;
 			pcwrite 	: IN  std_logic;
 			regDst		: IN std_logic;
 			alu_srca 	: IN  alu_ina_t;
@@ -51,6 +52,7 @@ ARCHITECTURE behaviour OF processor IS
 			databus_in 		: IN  std_logic_vector(31 DOWNTO 0);
 			write	        : OUT std_logic;
 			iord			: OUT std_logic;
+			pc_src          : OUT pc_src_t;
 			pcwrite			: OUT std_logic;
 			regDst			: OUT std_logic;			
 			alu_srca 		: OUT alu_ina_t;
@@ -65,6 +67,7 @@ ARCHITECTURE behaviour OF processor IS
 	
 	SIGNAL alu_sel		: alu_sel_t;
 	SIGNAL iord			: std_logic;
+	SIGNAL pc_src       : pc_src_t;
 	SIGNAL pcwrite		: std_logic;
 	SIGNAL alu_srca 	: alu_ina_t;
 	SIGNAL alu_srcb		: alu_inb_t;
@@ -84,6 +87,7 @@ BEGIN
 		databus_in 	=> databus_in,
 		write		=> write,
 		iord 		=> iord,
+		pc_src      => pc_src,
 		pcwrite 	=> pcwrite,
 		regDst 		=> regDst,
 		alu_srca 	=> alu_srca,
@@ -101,6 +105,7 @@ BEGIN
 		reset 		=> reset,
 		iord 		=> iord,
 		pcwrite 	=> pcwrite,
+		pc_src      => pc_src,
 		regDst		=> regDst,
 		alu_srca 	=> alu_srca,
 		alu_srcb 	=> alu_srcb,

@@ -18,6 +18,7 @@ ENTITY datapath IS
 		address_bus : OUT std_logic_vector(31 DOWNTO 0);
 		databus_out	: OUT std_logic_vector(31 DOWNTO 0);
 		databus_in 	: IN  std_logic_vector(31 DOWNTO 0);
+		pc_src      : IN  pc_src_t;
 		pcwrite 	: IN  std_logic;
 		regDst		: IN  std_logic;
 		alu_srca 	: IN  alu_ina_t;
@@ -50,6 +51,9 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL dst				: std_logic_vector(4 DOWNTO 0);
 	SIGNAL alu_reg			: std_logic_vector(31 DOWNTO 0);
 	SIGNAL imm 				: std_logic_vector(31 DOWNTO 0);
+	SIGNAL jump_address     : std_logic_vector(25 DOWNTO 0);
+	SIGNAL alu_zero         : std_logic;
+	SIGNAL alu_gtz          : std_logic;
 	
 BEGIN
 	PROCESS(clk,reset) 
@@ -61,6 +65,11 @@ BEGIN
 		
 		VARIABLE reg_dst	: Integer;
 		VARIABLE reg_inp	: std_logic_vector(31 DOWNTO 0);
+		
+		
+
+		
+		
 	BEGIN
 	   
 	    
@@ -77,6 +86,7 @@ BEGIN
 				src_tgt		<= databus_in(20 DOWNTO 16);
 				dst 		<= databus_in(15 DOWNTO 11);
 				funct		<= databus_in(5 DOWNTO 0);
+				jump_address<= databus_in(25 DOWNTO 0);
 				imm 		<= std_logic_vector(resize(signed(databus_in(15 DOWNTO 0)),32));
 			END IF;
 			
@@ -103,12 +113,18 @@ BEGIN
 					alu_inp0 := pc;
 				WHEN m_reg =>
 					alu_inp0 := reg(to_integer(unsigned(src)));
+			    WHEN m_regHI =>
+			        alu_inp0 := reg_HI;
 				WHEN OTHERS =>
 			END CASE;
 
 			CASE alu_srcb IS
 				WHEN m_pc4 =>
-					alu_inp1 := std_logic_vector(to_unsigned(4,32));
+                    IF (alu_zero = '1' AND opcode= "000100" ) OR (alu_gtz = '1' AND opcode = "000111") THEN
+                        alu_inp1 := std_logic_vector(unsigned(imm(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
+                    ELSE  
+					    alu_inp1 := std_logic_vector(to_unsigned(4,32));
+					END IF;
 				WHEN m_reg =>
 					alu_inp1 := reg(to_integer(unsigned(src_tgt)));
 				WHEN m_reg_invert =>
@@ -135,14 +151,25 @@ BEGIN
 					alu_out := alu_inp0 XOR alu_inp1;
 				WHEN OTHERS =>
 			END CASE;	
+			
+			alu_zero <= '0';
+			alu_gtz <= '0';
+			IF alu_out = "00000000000000000000000000000000" THEN
+			    alu_zero <= '1';
+			ELSIF alu_out(31) = '0' AND unsigned(alu_out)>0 THEN
+			    alu_gtz <= '1';
+			END IF;
 
-			-- Store ALU output in a register
-			
-			
-			
-			
 			IF pcwrite ='1' THEN
-				pc <= alu_out;
+		        CASE pc_src IS
+		            WHEN pc_jump =>
+		                pc <= pc(31 DOWNTO 28) & jump_address & "00";
+		            WHEN pc_alu  =>
+		                pc <=    alu_out;
+		            WHEN pc_alu_reg=>
+		                pc <= alu_reg;
+	            END CASE;
+				
 		    ELSE
 		        alu_reg 	<= alu_out;
 			END IF;
