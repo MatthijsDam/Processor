@@ -89,7 +89,13 @@ BEGIN
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
             address_bus     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
 
+        ELSIF rising_edge(clk)  AND enable = '0' AND state = fetch  THEN
+		-- initiating instruction fetch allowd even when we are disabled
+		    memory_read(pc);
+		    -- Increase program counter
+		    pc := pc+4;
 
+		    state <= execute;
             
         ELSIF rising_edge(clk)  AND enable = '1'  THEN
             CASE state IS
