@@ -23,10 +23,11 @@ add wave -label "reg" sim:/topentity_processor/proc/dtpath/reg
 
 add wave -label "memory" sim:/topentity_processor/mem/mem
 
-
-
+add wave -label "regHI"  sim:/topentity_processor/proc/dtpath/reg_HI
+add wave -label "regLO"  sim:/topentity_processor/proc/dtpath/reg_LO
+add wave -label "tempalu(33)"  /topentity_processor/proc/dtpath/line__64/temp_alu
 force clk 0,1 10ns -repeat 20ns
 force reset 1
 run 50ns
 force reset 0
-run 1000ns
+run 7000ns

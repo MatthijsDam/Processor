@@ -26,6 +26,9 @@ ENTITY controller IS
 		alu_srcb 		: OUT alu_inb_t;
 		alu_sel 		: OUT alu_sel_t;
 		alu_carry_in    : OUT std_logic;
+		hi_select       : OUT hi_select_t;
+		lo_select       : OUT lo_select_t;
+		hi_lo_write     : OUT std_logic;
 		irWrite 		: OUT std_logic;
 		regWrite		: OUT std_logic;
 		memToReg		: OUT std_logic
@@ -43,7 +46,7 @@ BEGIN
 		    VARIABLE mem_read_flag : std_logic;
 		    VARIABLE pc_jump_flag : std_logic;
 		    VARIABLE pc_branch_flag : std_logic;
-		    VARIABLE cycle_cnt  : integer RANGE 0 to 31;
+		    VARIABLE cycle_cnt  : integer RANGE 0 to 32;
 		
 		BEGIN
 			IF reset='1' THEN 
@@ -61,7 +64,11 @@ BEGIN
 				regDst		<= '0';
 				memToReg	<= '0';
 				alu_carry_in<= '0';	
+				cycle_cnt   := 0;
+				
 			ELSIF rising_edge(clk) THEN
+				hi_lo_write <= '0';
+				alu_carry_in <= '0';
 				CASE state IS
 					WHEN fetch =>
 						write 		<= '0';
@@ -89,6 +96,7 @@ BEGIN
 						pc_jump_flag   := '0';
 						pc_branch_flag:= '0';
 						pc_src  <= pc_alu;
+						hi_lo_write <= '0';
 						
 						CASE databus_in(31 DOWNTO 26) IS
 							WHEN Rtype =>
@@ -111,18 +119,29 @@ BEGIN
 									    alu_sel     <= alu_or;
 									WHEN F_mult =>
 									    alu_sel     <= alu_add; 
-									        
-								        
-									    IF cycle_cnt = 31 THEN
+									    hi_lo_write <= '1';
+									    hi_select <= hi_shift_right;
+									    lo_select <= lo_shift_right;
+									    alu_srca <= m_regHI;
+									    flag_reg_write := '0';
+								        IF cycle_cnt = 0 THEN
+								            alu_srca  <= m_reg; 
+								            hi_select <= hi_0;
+								            lo_select <= lo_operandA;
+									        state <= execute;
+									        cycle_cnt := cycle_cnt + 1;
+									    ELSIF cycle_cnt = 32 THEN
+									        alu_srcb <= m_reg_invert;
 									        cycle_cnt := 0;
-									        alu_carry_in<='1'; -- minus in last round
+									        alu_carry_in <= '1'; -- minus in last round
 									    ELSE
 									        cycle_cnt := cycle_cnt + 1;
 									        state <= execute;
 									    END IF;
-									WHEN F_divu =>  
+								   WHEN F_divu =>  
 									    alu_sel <= alu_add; 
 									    alu_carry_in<= '1';
+									    flag_reg_write := '0';
 									        
 									    IF cycle_cnt = 31 THEN
 									        cycle_cnt := 0;
@@ -131,25 +150,30 @@ BEGIN
 									        cycle_cnt := cycle_cnt + 1;
 									        state <= execute;
 									    END IF;
+									WHEN F_mfhi =>
+									    alu_sel 	<= alu_add;
+									    alu_srca <= m_regHI;
+									WHEN F_mflo => 
+									    alu_sel 	<= alu_add;  
+									    alu_srca <= m_regLO;
 									WHEN OTHERS =>
 								END CASE;
 							
 							WHEN Iadd =>
 								regDst		<= '1';
 								alu_srca	<= m_reg;
-								alu_srcb 	<= m_imm;
+								alu_srcb 	<= m_imma;
 								alu_sel		<= alu_add;
-								
 							WHEN Iand =>
 								regDst		<= '1';						
 								alu_srca	<= m_reg;
-								alu_srcb 	<= m_imm;
+								alu_srcb 	<= m_imml;
 								alu_sel		<= alu_and;
 							
 							WHEN Ior =>
 								regDst		<= '1';					
 								alu_srca	<= m_reg;
-								alu_srcb 	<= m_imm;
+								alu_srcb 	<= m_imml;
 								alu_sel		<= alu_or;
 	                        WHEN Ilui =>
 	                            regDst      <= '1';
@@ -159,9 +183,9 @@ BEGIN
 
 							WHEN Ilw =>
 							    write 		<= '0';
-								regDst		<= '1';
+								regDst		<= '1'; -- src_tgt
 								alu_srca	<= m_reg;
-								alu_srcb 	<= m_imm;
+								alu_srcb 	<= m_imma;
 								alu_sel		<= alu_add;
 								iord 		<= '1';
 								mem_read_flag := '1';
@@ -169,7 +193,7 @@ BEGIN
 								
 							WHEN Isw => 
 							    alu_srca	<= m_reg;
-								alu_srcb 	<= m_imm;
+								alu_srcb 	<= m_imma;
 								alu_sel		<= alu_add;
 							    iord 		<= '1';
 							    flag_reg_write := '0';
@@ -199,7 +223,7 @@ BEGIN
 						END CASE;
 										
 					WHEN mem_pc=>	
-					
+					    
 					    IF mem_read_flag = '1' THEN
 					        irWrite 	<= '0';
 					        memToReg 	<= '1';

@@ -10,6 +10,7 @@ USE ieee.numeric_std.ALL;
 use IEEE.std_logic_signed.all;
 USE work.ALL;
 USE types.ALL;
+USE instruction_decode_defs.ALL;
 
 ENTITY datapath IS
     PORT(
@@ -25,6 +26,9 @@ ENTITY datapath IS
 		alu_srcb 	: IN  alu_inb_t;
 		alu_sel     : IN  alu_sel_t;
 		alu_carry_in: IN  std_logic;
+    	hi_select   : IN hi_select_t;
+		lo_select   : IN lo_select_t;
+		hi_lo_write : IN std_logic;
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
 		regWrite 	: IN  std_logic;
@@ -50,7 +54,8 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL src_tgt			: std_logic_vector(4 DOWNTO 0);
 	SIGNAL dst				: std_logic_vector(4 DOWNTO 0);
 	SIGNAL alu_reg			: std_logic_vector(31 DOWNTO 0);
-	SIGNAL imm 				: std_logic_vector(31 DOWNTO 0);
+	SIGNAL imma 			: std_logic_vector(31 DOWNTO 0);
+	SIGNAL imml 		    : std_logic_vector(31 DOWNTO 0);
 	SIGNAL jump_address     : std_logic_vector(25 DOWNTO 0);
 	SIGNAL alu_zero         : std_logic;
 	SIGNAL alu_gtz          : std_logic;
@@ -59,6 +64,7 @@ BEGIN
 	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
+		VARIABLE carry_in_loc: std_logic;
 		VARIABLE carry_out  : std_logic;
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE temp_alu   : std_logic_vector(32 DOWNTO 0);
@@ -66,19 +72,17 @@ BEGIN
 		VARIABLE reg_dst	: Integer;
 		VARIABLE reg_inp	: std_logic_vector(31 DOWNTO 0);
 		
-		
-
-		
-		
 	BEGIN
 	   
 	    
 		IF reset='1' THEN 
             pc              <= (OTHERS => '0');
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
-    
+            reg_HI      <= (OTHERS => '0');
+			reg_LO      <= (OTHERS => '0');
 		ELSIF rising_edge(clk) THEN		
             databus_out <= reg(to_integer(unsigned(src_tgt)));
+            carry_in_loc := alu_carry_in;
 
 			IF irWrite ='1' THEN
 				opcode      <= databus_in(31 DOWNTO 26);
@@ -87,7 +91,9 @@ BEGIN
 				dst 		<= databus_in(15 DOWNTO 11);
 				funct		<= databus_in(5 DOWNTO 0);
 				jump_address<= databus_in(25 DOWNTO 0);
-				imm 		<= std_logic_vector(resize(signed(databus_in(15 DOWNTO 0)),32));
+				imma 		<= std_logic_vector(resize(signed(databus_in(15 DOWNTO 0)),32));
+				imml 		<= std_logic_vector(resize(unsigned(databus_in(15 DOWNTO 0)),32));
+				
 			END IF;
 			
 			CASE regDst IS
@@ -115,24 +121,38 @@ BEGIN
 					alu_inp0 := reg(to_integer(unsigned(src)));
 			    WHEN m_regHI =>
 			        alu_inp0 := reg_HI;
+			    WHEN m_regLO => -- alleen voor mflo
+			        alu_inp0 := reg_LO;    
 				WHEN OTHERS =>
 			END CASE;
 
+                        
+
 			CASE alu_srcb IS
 				WHEN m_pc4 =>
-                    IF (alu_zero = '1' AND opcode= "000100" ) OR (alu_gtz = '1' AND opcode = "000111") THEN
-                        alu_inp1 := std_logic_vector(unsigned(imm(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
+                    IF (alu_zero = '1' AND opcode= Ibeq ) OR (alu_gtz = '1' AND opcode = Ibgtz) THEN
+                        alu_inp1 := std_logic_vector(unsigned(imma(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
                     ELSE  
 					    alu_inp1 := std_logic_vector(to_unsigned(4,32));
 					END IF;
 				WHEN m_reg =>
-					alu_inp1 := reg(to_integer(unsigned(src_tgt)));
+				    alu_inp1 := reg(to_integer(unsigned(src_tgt)));
+			        IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
+			            alu_inp1 := (OTHERS => '0');
+			        END IF;		
 				WHEN m_reg_invert =>
+				    
 				    alu_inp1 := not reg(to_integer(unsigned(src_tgt)));
-				WHEN m_imm =>
-					alu_inp1 := imm;
+				    IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
+			            alu_inp1 := (OTHERS => '0');
+			            carry_in_loc := '0';
+			        END IF;	
+				WHEN m_imma =>
+					alu_inp1 := imma;
+                WHEN m_imml =>
+                    alu_inp1 := imml;                
                 WHEN m_imm_upper=>
-                    alu_inp1 := std_logic_vector(unsigned(imm) sll 16);
+                    alu_inp1 := std_logic_vector(unsigned(imml) sll 16);
 				WHEN OTHERS =>
 			END CASE;
 			
@@ -140,7 +160,7 @@ BEGIN
 			
 			CASE alu_sel IS
 				WHEN alu_add =>
-					temp_alu := std_logic_vector((alu_inp0(31)&alu_inp0) + (alu_inp1(31)&alu_inp1) + alu_carry_in);
+					temp_alu := std_logic_vector((alu_inp0(31)&alu_inp0) + (alu_inp1(31)&alu_inp1) + carry_in_loc);
 					carry_out:= temp_alu(32);
 					alu_out  := temp_alu(31 DOWNTO 0);
 				WHEN alu_and =>
@@ -159,6 +179,32 @@ BEGIN
 			ELSIF alu_out(31) = '0' AND unsigned(alu_out)>0 THEN
 			    alu_gtz <= '1';
 			END IF;
+			
+			IF hi_lo_write = '1' THEN
+			    CASE hi_select IS
+			        WHEN hi_0    => -- voor de initiatie
+			            reg_HI  <= (OTHERS => '0');
+			        WHEN hi_shift_left => -- voor de divu
+			            
+			             IF carry_out = '0' THEN
+			                reg_HI  <= carry_out & alu_out(31 downto 1);
+			            ELSE
+			                reg_HI  <= alu_inp1;
+			            END IF;
+			        WHEN hi_shift_right =>   -- voor de mult
+			           reg_HI  <= carry_out & alu_out(31 downto 1);
+			    END CASE;
+			
+			    CASE lo_select IS
+			        WHEN lo_operandA    => -- init
+			            reg_LO <= alu_inp0;
+			        WHEN lo_shift_left =>    -- divu
+                        reg_LO <= reg_LO(30 DOWNTO 0) & not carry_out;  
+			        WHEN lo_shift_right => -- mult
+			            reg_LO <= alu_out(0) & reg_LO(31 downto 1);
+			    END CASE;
+			END IF;
+			
 
 			IF pcwrite ='1' THEN
 		        CASE pc_src IS

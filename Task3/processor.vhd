@@ -38,6 +38,9 @@ ARCHITECTURE behaviour OF processor IS
 			alu_srcb 	: IN  alu_inb_t;
 			alu_sel     : IN  alu_sel_t;
 			alu_carry_in: IN  std_logic;
+        	hi_select   : IN hi_select_t;
+		    lo_select   : IN lo_select_t;
+		    hi_lo_write : IN std_logic;
 			iord		: IN  std_logic;
 			irWrite 	: IN  std_logic;
 			regWrite 	: IN  std_logic;
@@ -59,6 +62,9 @@ ARCHITECTURE behaviour OF processor IS
 			alu_srcb 		: OUT alu_inb_t;
 			alu_sel 		: OUT alu_sel_t;
 			alu_carry_in    : OUT std_logic;
+		    hi_select       : OUT hi_select_t;
+		    lo_select       : OUT lo_select_t;
+		    hi_lo_write     : OUT std_logic;
 			irWrite 		: OUT std_logic;
 			regWrite		: OUT std_logic;
 			memToReg		: OUT std_logic
@@ -76,6 +82,9 @@ ARCHITECTURE behaviour OF processor IS
 	SIGNAL regWrite		: std_logic;
 	SIGNAL regDst		: std_logic;
 	SIGNAL memToReg		: std_logic;
+	SIGNAL	hi_select   : hi_select_t;
+	SIGNAL	lo_select   : lo_select_t;
+	SIGNAL	hi_lo_write : std_logic;
 
 	
 BEGIN
@@ -94,6 +103,9 @@ BEGIN
 		alu_srcb	=> alu_srcb,
 		alu_sel 	=> alu_sel,
 		alu_carry_in=> alu_carry_in,
+		hi_select   => hi_select,
+		lo_select   => lo_select,
+		hi_lo_write => hi_lo_write,
 		irWrite 	=> irWrite,
 		regWrite 	=> regWrite,
 		memToReg 	=> memToReg
@@ -111,6 +123,9 @@ BEGIN
 		alu_srcb 	=> alu_srcb,
 		alu_sel 	=> alu_sel,
 		alu_carry_in=> alu_carry_in,
+		hi_select   => hi_select,
+		lo_select   => lo_select,
+		hi_lo_write => hi_lo_write,
 		irWrite 	=> irWrite,
 		regWrite 	=> regWrite,
 		address_bus => address_bus,
