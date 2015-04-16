@@ -26,8 +26,14 @@ add wave -label "memory" sim:/topentity_processor/mem/mem
 add wave -label "regHI"  sim:/topentity_processor/proc/dtpath/reg_HI
 add wave -label "regLO"  sim:/topentity_processor/proc/dtpath/reg_LO
 add wave -label "tempalu(33)"  /topentity_processor/proc/dtpath/line__64/temp_alu
+
+add wave -label "inp0"  /topentity_processor/proc/dtpath/line__64/alu_inp0
+add wave -label "inp1(divisor)"  /topentity_processor/proc/dtpath/line__64/alu_inp1
+add wave -label "carry in"  /topentity_processor/proc/dtpath/line__64/carry_in_loc
+add wave -label "carry out"  /topentity_processor/proc/dtpath/line__64/carry_out
+
 force clk 0,1 10ns -repeat 20ns
 force reset 1
 run 50ns
 force reset 0
-run 7000ns
+run 1200ns

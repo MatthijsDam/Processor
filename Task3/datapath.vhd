@@ -64,7 +64,7 @@ BEGIN
 	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
-		VARIABLE carry_in_loc: std_logic;
+		VARIABLE carry_in_loc: std_logic_vector(0 DOWNTO 0);
 		VARIABLE carry_out  : std_logic;
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE temp_alu   : std_logic_vector(32 DOWNTO 0);
@@ -82,7 +82,7 @@ BEGIN
 			reg_LO      <= (OTHERS => '0');
 		ELSIF rising_edge(clk) THEN		
             databus_out <= reg(to_integer(unsigned(src_tgt)));
-            carry_in_loc := alu_carry_in;
+            carry_in_loc(0) := alu_carry_in;
 
 			IF irWrite ='1' THEN
 				opcode      <= databus_in(31 DOWNTO 26);
@@ -119,14 +119,18 @@ BEGIN
 					alu_inp0 := pc;
 				WHEN m_reg =>
 					alu_inp0 := reg(to_integer(unsigned(src)));
+   
 			    WHEN m_regHI =>
 			        alu_inp0 := reg_HI;
+        		    IF opcode = Rtype AND funct = F_divu THEN
+			            alu_inp0 := reg_HI(30 DOWNTO 0) & reg_LO(31);
+			         END IF;
 			    WHEN m_regLO => -- alleen voor mflo
 			        alu_inp0 := reg_LO;    
 				WHEN OTHERS =>
 			END CASE;
 
-                        
+                       
 
 			CASE alu_srcb IS
 				WHEN m_pc4 =>
@@ -145,7 +149,7 @@ BEGIN
 				    alu_inp1 := not reg(to_integer(unsigned(src_tgt)));
 				    IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
 			            alu_inp1 := (OTHERS => '0');
-			            carry_in_loc := '0';
+			            carry_in_loc(0) := '0';
 			        END IF;	
 				WHEN m_imma =>
 					alu_inp1 := imma;
@@ -160,7 +164,13 @@ BEGIN
 			
 			CASE alu_sel IS
 				WHEN alu_add =>
-					temp_alu := std_logic_vector((alu_inp0(31)&alu_inp0) + (alu_inp1(31)&alu_inp1) + carry_in_loc);
+				
+				 --   IF alu_srcb = m_reg_invert THEN
+    			 --		temp_alu := std_logic_vector(   unsigned('0'& alu_inp0) + unsigned('0' & alu_inp1) + unsigned(carry_in_loc)    );
+    			 --	ELSE
+    			 --		temp_alu := std_logic_vector(   unsigned('0'& alu_inp0) + unsigned('0' & alu_inp1) + unsigned(carry_in_loc)    );
+                 --   END IF;
+                  temp_alu := std_logic_vector(   unsigned(alu_inp0(31)& alu_inp0) + unsigned(alu_inp1(31) & alu_inp1) + unsigned(carry_in_loc)    );
 					carry_out:= temp_alu(32);
 					alu_out  := temp_alu(31 DOWNTO 0);
 				WHEN alu_and =>
@@ -187,9 +197,11 @@ BEGIN
 			        WHEN hi_shift_left => -- voor de divu
 			            
 			             IF carry_out = '0' THEN
-			                reg_HI  <= carry_out & alu_out(31 downto 1);
+    			             ASSERT false REPORT "not restoring" SEVERITY warning;
+			                reg_HI  <= alu_out; -- not restoring
 			            ELSE
-			                reg_HI  <= alu_inp1;
+    			             ASSERT false REPORT "wel restoring" SEVERITY warning;
+			                reg_HI  <= alu_inp0;-- restoring, because overflow
 			            END IF;
 			        WHEN hi_shift_right =>   -- voor de mult
 			           reg_HI  <= carry_out & alu_out(31 downto 1);

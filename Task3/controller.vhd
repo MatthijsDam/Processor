@@ -96,7 +96,7 @@ BEGIN
 						pc_jump_flag   := '0';
 						pc_branch_flag:= '0';
 						pc_src  <= pc_alu;
-						hi_lo_write <= '0';
+						
 						
 						CASE databus_in(31 DOWNTO 26) IS
 							WHEN Rtype =>
@@ -138,18 +138,45 @@ BEGIN
 									        cycle_cnt := cycle_cnt + 1;
 									        state <= execute;
 									    END IF;
+									    
+									    
+									    
+									    
+									    
+									    
+									    
+									    
 								   WHEN F_divu =>  
-									    alu_sel <= alu_add; 
-									    alu_carry_in<= '1';
+									    alu_sel <= alu_add;
+									    hi_lo_write <= '1';
 									    flag_reg_write := '0';
-									        
-									    IF cycle_cnt = 31 THEN
-									        cycle_cnt := 0;
-									        alu_carry_in<='1'; -- minus in last round
-									    ELSE
+									    hi_select <= hi_shift_left;
+									    lo_select <= lo_shift_left;
+									    alu_srca <= m_regHI;
+									    alu_srcb <= m_reg_invert;
+									    alu_carry_in<= '1';
+									    
+									    IF cycle_cnt = 0 THEN
+									        alu_srca  <= m_reg; 
+									        alu_srcb  <= m_reg; 
+								            hi_select <= hi_0;
+								            lo_select <= lo_operandA;									        
 									        cycle_cnt := cycle_cnt + 1;
 									        state <= execute;
+									    ELSIF cycle_cnt = 32 THEN
+									        cycle_cnt := 0;
+									    ELSE
+									        cycle_cnt := cycle_cnt + 1;  
+									        state <= execute;
 									    END IF;
+									    
+									    
+									    
+									    
+									    
+									    
+									    
+									    
 									WHEN F_mfhi =>
 									    alu_sel 	<= alu_add;
 									    alu_srca <= m_regHI;
