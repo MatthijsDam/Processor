@@ -26,6 +26,7 @@ ENTITY datapath IS
 		alu_srcb 	: IN  alu_inb_t;
 		alu_sel     : IN  alu_sel_t;
 		alu_carry_in: IN  std_logic;
+		div_by_zero : OUT std_logic;
     	hi_select   : IN  hi_select_t;
 		lo_select   : IN  lo_select_t;
 		hi_lo_write : IN  std_logic;
@@ -60,6 +61,7 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL alu_gtz          : std_logic;
 	
 BEGIN
+    div_by_zero <= alu_zero;
 	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
@@ -75,7 +77,8 @@ BEGIN
 		
 	BEGIN
 	   
-	    
+		
+
 		IF reset='1' THEN 
             pc              <= (OTHERS => '0');
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
@@ -125,7 +128,7 @@ BEGIN
    
 			    WHEN m_regHI =>
 			        alu_inp0 := reg_HI;
-        		    IF opcode = Rtype AND funct = F_divu THEN
+        		    IF opcode = Rtype AND funct = F_divu AND carry_in_loc = "1" THEN
 			            alu_inp0 := reg_HI(30 DOWNTO 0) & reg_LO(31);
 			         END IF;
 			    WHEN m_regLO => -- alleen voor mflo
@@ -193,7 +196,7 @@ BEGIN
 			ELSIF alu_out(31) = '0' AND unsigned(alu_out)>0 THEN
 			    alu_gtz <= '1';
 			END IF;
-			
+
 			IF hi_lo_write = '1' THEN
 			    CASE hi_select IS
 			        WHEN hi_0    => -- voor de initiatie
@@ -218,6 +221,8 @@ BEGIN
                         reg_LO <= reg_LO(30 DOWNTO 0) & not carry_out;  
 			        WHEN lo_shift_right => -- mult
 			            reg_LO <= alu_out(0) & reg_LO(31 downto 1);
+			        WHEN lo_0 => -- used when div by zero
+			            reg_LO <= (OTHERS => '0');
 			    END CASE;
 			END IF;
 			
@@ -226,11 +231,8 @@ BEGIN
 		            WHEN pc_jump =>
 		                pc <= pc(31 DOWNTO 28) & jump_address & "00";
 		            WHEN pc_alu  =>
-		                pc <=    alu_out;
-		            WHEN pc_alu_reg=>
-		                pc <= alu_reg;
+		                pc <= alu_out;
 	            END CASE;
-				
 		    ELSE
 		        alu_reg 	<= alu_out;
 			END IF;

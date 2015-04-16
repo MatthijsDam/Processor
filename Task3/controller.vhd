@@ -26,6 +26,7 @@ ENTITY controller IS
 		alu_srcb 		: OUT alu_inb_t;
 		alu_sel 		: OUT alu_sel_t;
 		alu_carry_in    : OUT std_logic;
+		div_by_zero     : IN std_logic;
 		hi_select       : OUT hi_select_t;
 		lo_select       : OUT lo_select_t;
 		hi_lo_write     : OUT std_logic;
@@ -46,7 +47,7 @@ BEGIN
 		    VARIABLE mem_read_flag      : std_logic;
 		    VARIABLE pc_jump_flag       : std_logic;
 		    VARIABLE pc_branch_flag     : std_logic;
-		    VARIABLE cycle_cnt          : integer RANGE 0 to 32;
+		    VARIABLE cycle_cnt          : integer RANGE 0 to 34;
 		
 		BEGIN
 			IF reset='1' THEN 
@@ -147,19 +148,46 @@ BEGIN
 									    alu_srcb        <= m_reg_invert;
 									    alu_carry_in    <= '1';
 									    
-									    IF cycle_cnt = 0 THEN
+									    IF cycle_cnt = 0 THEN -- INIT
 									        alu_srca  <= m_reg; 
 									        alu_srcb  <= m_reg; 
 								            hi_select <= hi_0;
 								            lo_select <= lo_operandA;									        
 									        cycle_cnt := cycle_cnt + 1;
 									        state <= execute;
-									    ELSIF cycle_cnt = 32 THEN
+									    ELSIF cycle_cnt = 1 OR cycle_cnt = 2 THEN -- check div by zero
+									        -- alu out = hi(=0) + srcb(=divisor) 
+									        alu_srca  <= m_regHI; 
+									        alu_srcb  <= m_reg; 
+									        alu_carry_in    <= '0';
+
+									        cycle_cnt := cycle_cnt + 1;
+									        hi_lo_write <= '0';
+									        state <= execute;
+--									    ELSIF cycle_cnt = 2 THEN
+--    									    cycle_cnt := cycle_cnt + 1;
+--									        hi_lo_write <= '0';
+--									        state <= execute;
+   									    ELSIF cycle_cnt = 3 THEN
+   									    
+           									IF     (div_by_zero = '1') THEN -- there was a div by zero, abort div
+									                cycle_cnt := 0;  
+								                    hi_select <= hi_0;
+								                    lo_select <= lo_0;									        
+									                state <= mem_pc;
+									            ASSERT false REPORT "div cycle2, WEL div0" SEVERITY warning;
+									        ELSE
+									            ASSERT false REPORT "div cycle2, not div0" SEVERITY warning;
+    									        cycle_cnt := cycle_cnt + 1;  
+    									        state <= execute;
+									        END IF;
+									    ELSIF cycle_cnt = 34 THEN
 									        cycle_cnt := 0;
 									    ELSE
 									        cycle_cnt := cycle_cnt + 1;  
 									        state <= execute;
 									    END IF;
+
 									 WHEN F_mfhi =>
 									    alu_sel 	<= alu_add;
 									    alu_srca    <= m_regHI;

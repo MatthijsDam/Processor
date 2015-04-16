@@ -40,6 +40,15 @@ add wave -label "reg bhv" sim:/topentity_compare/proc_bhv/reg
 add wave -label "reg bhv low" sim:/topentity_compare/proc_bhv/reg_LO
 add wave -label "reg bhv high" sim:/topentity_compare/proc_bhv/reg_HI
 
+add wave -label "funct"  sim:/topentity_compare/proc/dtpath/funct
+add wave -label "opcode" sim:/topentity_compare/proc/dtpath/opcode
+add wave -label "div0"  sim:/topentity_compare/proc/contr/div_by_zero
+add wave -label "cycle_cnt"  sim:/topentity_compare/proc/contr/line__43/cycle_cnt
+
+radix signal sim:/topentity_compare/address_mem hexadecimal
+radix signal sim:/topentity_compare/address_bus_bhv hexadecimal
+radix signal sim:/topentity_compare/address_bus_alu hexadecimal
+
 force clk 0,1 10ns -repeat 20ns
 force reset 1
 run 50ns
