@@ -1,4 +1,4 @@
--- assembled from test_prog.asm on 2015-04-16 10:28:11.808452 CEST
+-- assembled from test_prog.asm on 2015-04-16 11:45:07.910319 CEST
 
 --  Address    Code        Basic                     Source
 -- 
@@ -16,7 +16,7 @@
 -- 0x0000002c  0x340d03ff  ori $13,$0,0x000003ff 19        ori $13,$0, 1023 # stores or result()
 -- 0x00000030  0x340d03ff  ori $13,$0,0x000003ff 21        ori $13,$0, 1023 # stores arithmetic branch condition
 -- 0x00000034  0x340d03ff  ori $13,$0,0x000003ff 22        ori $13,$0, 1023 # stores logic branch condition
--- 0x00000038  0x20140100  addi $20,$0,0x0000010026        addi $20, $0, 256    # .data offset voor "hardware"
+-- 0x00000038  0x201403fc  addi $20,$0,0x000003fc26        addi $20, $0, 1020    # .data offset voor "hardware"
 -- 0x0000003c  0xae82ffe8  sw $2,0xffffffe8($20) 28        sw   $2, -24($20) # store all the registers to the memory, offset and register flipped in order to switch easy between simulator and hardware
 -- 0x00000040  0xae83ffec  sw $3,0xffffffec($20) 29        sw   $3, -20($20)
 -- 0x00000044  0xae84fff0  sw $4,0xfffffff0($20) 30        sw   $4, -16($20)
@@ -78,7 +78,7 @@ PACKAGE program IS
 "00110100000011010000001111111111",
 "00110100000011010000001111111111",
 "00110100000011010000001111111111",
-"00100000000101000000000100000000",
+"00100000000101000000001111111100",
 "10101110100000101111111111101000",
 "10101110100000111111111111101100",
 "10101110100001001111111111110000",
