@@ -107,6 +107,7 @@ BEGIN
 										alu_sel 	<= alu_add;
 									WHEN F_sub =>
 								        alu_sel 	<= alu_add;
+   								        alu_srcb    <= m_reg_invert;
 								        alu_carry_in<= '1';
 									WHEN F_and =>
 										alu_sel 	<= alu_and;
