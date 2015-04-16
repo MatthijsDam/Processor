@@ -139,8 +139,8 @@ BEGIN
                                 reg(dst) <= std_logic_vector( signed(operand1) + signed(operand2) ); 
                             -- Arithmetic DIVU
                             WHEN F_divu =>
-                                reg_HI <= std_logic_vector( signed(operand1) mod signed(operand2) );
-                                reg_LO <= std_logic_vector( signed(operand1) / signed(operand2) );
+                                reg_HI <= std_logic_vector( unsigned(operand1) mod unsigned(operand2) );
+                                reg_LO <= std_logic_vector( unsigned(operand1) / unsigned(operand2) );
                             -- Arithmetic MULT
                             WHEN F_mult =>
                                  temp64 := std_logic_vector( signed(operand1) * signed(operand2) ); 
