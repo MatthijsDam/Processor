@@ -64,7 +64,9 @@ BEGIN
 	PROCESS(clk,reset) 
 		VARIABLE alu_inp0 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE alu_inp1 	: std_logic_vector(31 DOWNTO 0);
-		VARIABLE carry_in_loc: std_logic_vector(0 DOWNTO 0);
+		VARIABLE alu_inp0_32: std_logic;
+		VARIABLE alu_inp1_32: std_logic;
+		VARIABLE carry_in_loc:std_logic_vector(0 DOWNTO 0);
 		VARIABLE carry_out  : std_logic;
 		VARIABLE alu_out 	: std_logic_vector(31 DOWNTO 0);
 		VARIABLE temp_alu   : std_logic_vector(32 DOWNTO 0);
@@ -83,6 +85,8 @@ BEGIN
 		ELSIF rising_edge(clk) THEN		
             databus_out <= reg(to_integer(unsigned(src_tgt)));
             carry_in_loc(0) := alu_carry_in;
+            alu_inp0_32 := '0'; -- only used in mult and divu 
+            alu_inp1_32 := '0';
 
 			IF irWrite ='1' THEN
 				opcode      <= databus_in(31 DOWNTO 26);
@@ -145,7 +149,7 @@ BEGIN
 			            alu_inp1 := (OTHERS => '0');
 			        END IF;		
 				WHEN m_reg_invert =>
-				    
+                    
 				    alu_inp1 := not reg(to_integer(unsigned(src_tgt)));
 				    IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
 			            alu_inp1 := (OTHERS => '0');
@@ -164,13 +168,14 @@ BEGIN
 			
 			CASE alu_sel IS
 				WHEN alu_add =>
-				
-				 --   IF alu_srcb = m_reg_invert THEN
-    			 --		temp_alu := std_logic_vector(   unsigned('0'& alu_inp0) + unsigned('0' & alu_inp1) + unsigned(carry_in_loc)    );
-    			 --	ELSE
-    			 --		temp_alu := std_logic_vector(   unsigned('0'& alu_inp0) + unsigned('0' & alu_inp1) + unsigned(carry_in_loc)    );
-                 --   END IF;
-                  temp_alu := std_logic_vector(   unsigned(alu_inp0(31)& alu_inp0) + unsigned(alu_inp1(31) & alu_inp1) + unsigned(carry_in_loc)    );
+				    IF opcode = Rtype AND funct = F_mult THEN
+				        alu_inp0_32 := alu_inp0(31);
+				        alu_inp1_32 := alu_inp1(31);
+				    ELSIF opcode = Rtype AND funct = F_divu THEN
+				        alu_inp0_32 := '0';
+				        alu_inp1_32 := '1';
+				    END IF;
+                    temp_alu := std_logic_vector(unsigned(alu_inp0_32& alu_inp0) + unsigned(alu_inp1_32&alu_inp1) + unsigned(carry_in_loc)    );
 					carry_out:= temp_alu(32);
 					alu_out  := temp_alu(31 DOWNTO 0);
 				WHEN alu_and =>

@@ -31,9 +31,10 @@ add wave -label "inp0"  /topentity_processor/proc/dtpath/line__64/alu_inp0
 add wave -label "inp1(divisor)"  /topentity_processor/proc/dtpath/line__64/alu_inp1
 add wave -label "carry in"  /topentity_processor/proc/dtpath/line__64/carry_in_loc
 add wave -label "carry out"  /topentity_processor/proc/dtpath/line__64/carry_out
-
+add wave -label "srcB"  sim:/topentity_processor/proc/dtpath/alu_srcb
+add wave -label "srcTgt"  sim:/topentity_processor/proc/dtpath/src_tgt
 force clk 0,1 10ns -repeat 20ns
 force reset 1
 run 50ns
 force reset 0
-run 1200ns
+run 1700ns
