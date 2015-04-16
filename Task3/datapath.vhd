@@ -140,7 +140,7 @@ BEGIN
 
 			CASE alu_srcb IS
 				WHEN m_pc4 =>
-                    IF (alu_zero = '1' AND opcode= Ibeq ) OR (alu_gtz = '1' AND opcode = Ibgtz) THEN
+                    IF (alu_zero = '1' AND opcode = Rtype AND opcode= Ibeq ) OR (alu_gtz = '1' AND opcode = Rtype AND opcode = Ibgtz) THEN
                         alu_inp1 := std_logic_vector(unsigned(imma(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
                     ELSE  
 					    alu_inp1 := std_logic_vector(to_unsigned(4,32));
