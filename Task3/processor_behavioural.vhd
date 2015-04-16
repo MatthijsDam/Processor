@@ -209,7 +209,11 @@ BEGIN
                 WHEN mem_read =>
                     reg(src_tgt)  <= databus_in;
                                    
-                    state     <= fetch;
+                    memory_read(pc);
+                                   -- Increase program counter
+                    pc := pc+4;
+
+                    state <= execute;
             END CASE;
         END IF;
     END PROCESS;
