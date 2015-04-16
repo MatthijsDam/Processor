@@ -34,6 +34,7 @@ main:
      sw   $8, 0($20)
 
 begin:
+	 addi $4, $0, 0
      lw   $2, -24($20) # load all the register from the memory
      lw   $3, -20($20)
      lw   $4, -16($20)

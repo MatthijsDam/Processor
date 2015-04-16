@@ -199,6 +199,8 @@ BEGIN
 								alu_sel		    <= alu_add;
 								iord 		    <= '1';
 								mem_read_flag   := '1';
+								
+								memToReg 	<= '1'; --
 							WHEN Isw => 
 							    alu_srca	    <= m_reg;
 								alu_srcb 	    <= m_imma;
@@ -228,12 +230,19 @@ BEGIN
 										
 					WHEN mem_pc=>	
 					    
+						
 					    IF mem_read_flag = '1' THEN
-					        irWrite 	<= '0';
+					        regWrite 	<= '1';
+							irWrite 	<= '0';
 					        memToReg 	<= '1';
-					    ELSIF mem_write_flag = '1' THEN
-					        write 		<= '1';
+							state 		<= fetch;
+						ELSE 
+							state       <= write_back;						
 					    END IF;
+						
+						IF mem_write_flag = '1' THEN
+							write 		<= '1';
+						END	IF;
 					    
 					    IF pc_jump_flag = '1' THEN
 					        pc_src      <= pc_jump;
@@ -244,7 +253,7 @@ BEGIN
 		                END IF;
 					    pcwrite		<= '1';
        				    alu_sel 	<= alu_add;
-						state       <= write_back;
+						
 					WHEN write_back =>
                         pcwrite     <= '0';
                         write 		<= '0';
@@ -254,6 +263,7 @@ BEGIN
 							
 						iord		<= '0';	
 						state 		<= fetch;
+
 				END CASE;
 			END IF;
 		END PROCESS;

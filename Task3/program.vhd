@@ -1,4 +1,4 @@
--- assembled from test_prog.asm on 2015-04-16 11:45:07.910319 CEST
+-- assembled from test_prog.asm on 2015-04-16 13:23:00.5982656 West-Europa (zomertijd)
 
 --  Address    Code        Basic                     Source
 -- 
@@ -24,37 +24,38 @@
 -- 0x0000004c  0xae86fff8  sw $6,0xfffffff8($20) 32        sw   $6, -8($20)
 -- 0x00000050  0xae87fffc  sw $7,0xfffffffc($20) 33        sw   $7, -4($20)
 -- 0x00000054  0xae880000  sw $8,0x00000000($20) 34        sw   $8, 0($20)
--- 0x00000058  0x8e82ffe8  lw $2,0xffffffe8($20) 37        lw   $2, -24($20) # load all the register from the memory
--- 0x0000005c  0x8e83ffec  lw $3,0xffffffec($20) 38        lw   $3, -20($20)
--- 0x00000060  0x8e84fff0  lw $4,0xfffffff0($20) 39        lw   $4, -16($20)
--- 0x00000064  0x8e85fff4  lw $5,0xfffffff4($20) 40        lw   $5, -12($20)
--- 0x00000068  0x8e86fff8  lw $6,0xfffffff8($20) 41        lw   $6, -8($20)
--- 0x0000006c  0x8e87fffc  lw $7,0xfffffffc($20) 42        lw   $7, -4($20)
--- 0x00000070  0x8e880000  lw $8,0x00000000($20) 43        lw   $8, 0($20) 
--- 0x00000074  0x00432020  add $4,$2,$3          45        add    $4, $2, $3  
--- 0x00000078  0x20a60032  addi $6,$5,0x00000032 46        addi   $6, $5, 50
--- 0x0000007c  0x00c74024  and $8,$6,$7          48        and    $8, $6, $7
--- 0x00000080  0x3043aaaa  andi $3,$2,0x0000aaaa 49        andi   $3, $2, 0xAAAA
--- 0x00000084  0x10640001  beq $3,$4,0x00000001  51        beq    $3, $4, branch1 ## 
--- 0x00000088  0x10640000  beq $3,$4,0x00000000  52        beq    $3, $4, branch1 ## 
--- 0x0000008c  0x1cc00001  bgtz $6,0x00000001    54        bgtz   $6, branch2
--- 0x00000090  0x1cc00000  bgtz $6,0x00000000    55        bgtz   $6, branch2     ## duplicat both to verify right behaviour
--- 0x00000094  0x0107001b  divu $8,$7            58        divu   $8, $7
--- 0x00000098  0x00003810  mfhi $7               59        mfhi   $7
--- 0x0000009c  0x00004012  mflo $8               60        mflo   $8
--- 0x000000a0  0x00430018  mult $2,$3            63        mult   $2, $3
--- 0x000000a4  0x00001010  mfhi $2               64        mfhi   $2
--- 0x000000a8  0x00001812  mflo $3               65        mflo   $3
--- 0x000000ac  0x00000000  nop                   67        nop	   	
--- 0x000000b0  0x00000000  nop                   68        nop	
--- 0x000000b4  0xae82ffe8  sw $2,0xffffffe8($20) 70        sw   $2, -24($20)
--- 0x000000b8  0xae83ffec  sw $3,0xffffffec($20) 71        sw   $3, -20($20)
--- 0x000000bc  0xae84fff0  sw $4,0xfffffff0($20) 72        sw   $4, -16($20)
--- 0x000000c0  0xae85fff4  sw $5,0xfffffff4($20) 73        sw   $5, -12($20)
--- 0x000000c4  0xae86fff8  sw $6,0xfffffff8($20) 74        sw   $6, -8($20)
--- 0x000000c8  0xae87fffc  sw $7,0xfffffffc($20) 75        sw   $7, -4($20)
--- 0x000000cc  0xae880000  sw $8,0x00000000($20) 76        sw   $8, 0($20) # load some registers
--- 0x000000d0  0x08000016  j 0x00000058          81        j begin ## jump to start
+-- 0x00000058  0x20040000  addi $4,$0,0x00000000 37   	 addi $4, $0, 0
+-- 0x0000005c  0x8e82ffe8  lw $2,0xffffffe8($20) 38        lw   $2, -24($20) # load all the register from the memory
+-- 0x00000060  0x8e83ffec  lw $3,0xffffffec($20) 39        lw   $3, -20($20)
+-- 0x00000064  0x8e84fff0  lw $4,0xfffffff0($20) 40        lw   $4, -16($20)
+-- 0x00000068  0x8e85fff4  lw $5,0xfffffff4($20) 41        lw   $5, -12($20)
+-- 0x0000006c  0x8e86fff8  lw $6,0xfffffff8($20) 42        lw   $6, -8($20)
+-- 0x00000070  0x8e87fffc  lw $7,0xfffffffc($20) 43        lw   $7, -4($20)
+-- 0x00000074  0x8e880000  lw $8,0x00000000($20) 44        lw   $8, 0($20) 
+-- 0x00000078  0x00432020  add $4,$2,$3          46        add    $4, $2, $3  
+-- 0x0000007c  0x20a60032  addi $6,$5,0x00000032 47        addi   $6, $5, 50
+-- 0x00000080  0x00c74024  and $8,$6,$7          49        and    $8, $6, $7
+-- 0x00000084  0x3043aaaa  andi $3,$2,0x0000aaaa 50        andi   $3, $2, 0xAAAA
+-- 0x00000088  0x10640001  beq $3,$4,0x00000001  52        beq    $3, $4, branch1 ## 
+-- 0x0000008c  0x10640000  beq $3,$4,0x00000000  53        beq    $3, $4, branch1 ## 
+-- 0x00000090  0x1cc00001  bgtz $6,0x00000001    55        bgtz   $6, branch2
+-- 0x00000094  0x1cc00000  bgtz $6,0x00000000    56        bgtz   $6, branch2     ## duplicat both to verify right behaviour
+-- 0x00000098  0x0107001b  divu $8,$7            59        divu   $8, $7
+-- 0x0000009c  0x00003810  mfhi $7               60        mfhi   $7
+-- 0x000000a0  0x00004012  mflo $8               61        mflo   $8
+-- 0x000000a4  0x00430018  mult $2,$3            64        mult   $2, $3
+-- 0x000000a8  0x00001010  mfhi $2               65        mfhi   $2
+-- 0x000000ac  0x00001812  mflo $3               66        mflo   $3
+-- 0x000000b0  0x00000000  nop                   68        nop	   	
+-- 0x000000b4  0x00000000  nop                   69        nop	
+-- 0x000000b8  0xae82ffe8  sw $2,0xffffffe8($20) 71        sw   $2, -24($20)
+-- 0x000000bc  0xae83ffec  sw $3,0xffffffec($20) 72        sw   $3, -20($20)
+-- 0x000000c0  0xae84fff0  sw $4,0xfffffff0($20) 73        sw   $4, -16($20)
+-- 0x000000c4  0xae85fff4  sw $5,0xfffffff4($20) 74        sw   $5, -12($20)
+-- 0x000000c8  0xae86fff8  sw $6,0xfffffff8($20) 75        sw   $6, -8($20)
+-- 0x000000cc  0xae87fffc  sw $7,0xfffffffc($20) 76        sw   $7, -4($20)
+-- 0x000000d0  0xae880000  sw $8,0x00000000($20) 77        sw   $8, 0($20) # load some registers
+-- 0x000000d4  0x08000016  j 0x00000058          82        j begin ## jump to start
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
@@ -86,6 +87,7 @@ PACKAGE program IS
 "10101110100001101111111111111000",
 "10101110100001111111111111111100",
 "10101110100010000000000000000000",
+"00100000000001000000000000000000",
 "10001110100000101111111111101000",
 "10001110100000111111111111101100",
 "10001110100001001111111111110000",
