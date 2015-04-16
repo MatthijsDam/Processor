@@ -220,7 +220,7 @@ BEGIN
                                -- reg_LO_internal := reg_LO(30 downto 0) & 'U';
                                 --remainder_LO    := remainder_LO(30 downto 0) & 'U';
                                 
-                                adder_res       := (reg_HI_internal(31) & unsigned(reg_HI_internal)) + (not divisor(31) & (not divisor)) + 1; -- use alu adder
+                                adder_res       := ('0' & unsigned(reg_HI_internal)) + ( '1' & (not divisor)) + 1; -- use alu adder
                                 
                                 if adder_res(32)='0' then
                                     reg_HI_internal := std_logic_vector(adder_res(31 downto 0));
