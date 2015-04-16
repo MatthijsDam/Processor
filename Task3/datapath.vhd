@@ -26,9 +26,9 @@ ENTITY datapath IS
 		alu_srcb 	: IN  alu_inb_t;
 		alu_sel     : IN  alu_sel_t;
 		alu_carry_in: IN  std_logic;
-    	hi_select   : IN hi_select_t;
-		lo_select   : IN lo_select_t;
-		hi_lo_write : IN std_logic;
+    	hi_select   : IN  hi_select_t;
+		lo_select   : IN  lo_select_t;
+		hi_lo_write : IN  std_logic;
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
 		regWrite 	: IN  std_logic;
@@ -39,9 +39,6 @@ END datapath;
 ARCHITECTURE behaviour OF datapath IS
     SIGNAL reg 				: reg_bank_t := 
 		("00000000000000000000000000000000",
-		"00000000000000000000000000000000",
-		"00000000000000000000000000000010",
-		"00000000000000000000000000000011",
 		OTHERS => "00000000000000000000000000000000"
 		);
     SIGNAL reg_LO, reg_HI	: std_logic_vector(31 DOWNTO 0); 
@@ -53,6 +50,8 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL src				: std_logic_vector(4 DOWNTO 0);
 	SIGNAL src_tgt			: std_logic_vector(4 DOWNTO 0);
 	SIGNAL dst				: std_logic_vector(4 DOWNTO 0);
+	
+	-- Alu signals
 	SIGNAL alu_reg			: std_logic_vector(31 DOWNTO 0);
 	SIGNAL imma 			: std_logic_vector(31 DOWNTO 0);
 	SIGNAL imml 		    : std_logic_vector(31 DOWNTO 0);
@@ -222,7 +221,6 @@ BEGIN
 			    END CASE;
 			END IF;
 			
-
 			IF pcwrite ='1' THEN
 		        CASE pc_src IS
 		            WHEN pc_jump =>
@@ -244,7 +242,6 @@ BEGIN
 					address_bus <= alu_out;
 				WHEN OTHERS =>
 			END CASE;
-			
 		END IF;
 	END PROCESS;	
 END ARCHITECTURE;

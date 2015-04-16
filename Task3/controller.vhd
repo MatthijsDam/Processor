@@ -40,62 +40,60 @@ ARCHITECTURE behaviour OF controller IS
     
 BEGIN
 		PROCESS(clk,reset)
-		    VARIABLE flag_reg_write : std_logic;
-		    VARIABLE flag_mem_to_reg : std_logic;
-		    VARIABLE mem_write_flag : std_logic;
-		    VARIABLE mem_read_flag : std_logic;
-		    VARIABLE pc_jump_flag : std_logic;
-		    VARIABLE pc_branch_flag : std_logic;
-		    VARIABLE cycle_cnt  : integer RANGE 0 to 32;
+		    VARIABLE flag_reg_write     : std_logic;
+		    VARIABLE flag_mem_to_reg    : std_logic;
+		    VARIABLE mem_write_flag     : std_logic;
+		    VARIABLE mem_read_flag      : std_logic;
+		    VARIABLE pc_jump_flag       : std_logic;
+		    VARIABLE pc_branch_flag     : std_logic;
+		    VARIABLE cycle_cnt          : integer RANGE 0 to 32;
 		
 		BEGIN
 			IF reset='1' THEN 
-				state 		<= fetch;
-				write 		<= '0';
-				iord 		<= '0';
-				irWrite 	<= '0';
-				regWrite 	<= '0';
+				state 		    <= fetch;
+				write 		    <= '0';
+				iord 		    <= '0';
+				irWrite 	    <= '0';
+				regWrite 	    <= '0';
 				flag_reg_write  := '0';	
 				flag_mem_to_reg := '0';			
 				mem_write_flag  := '0';
 				mem_read_flag   := '0';
 				pc_jump_flag    := '0';
-				pcwrite	    <= '0';
-				regDst		<= '0';
-				memToReg	<= '0';
-				alu_carry_in<= '0';	
-				cycle_cnt   := 0;
+				pcwrite	        <= '0';
+				regDst		    <= '0';
+				memToReg	    <= '0';
+				alu_carry_in    <= '0';	
+				cycle_cnt       := 0;
 				
 			ELSIF rising_edge(clk) THEN
-				hi_lo_write <= '0';
-				alu_carry_in <= '0';
+				hi_lo_write     <= '0';
+				alu_carry_in    <= '0';
 				CASE state IS
 					WHEN fetch =>
-						write 		<= '0';
-						iord 		<= '0';
-						irWrite 	<= '0';
-						regWrite 	<= '0';
-						pcwrite		<= '0';
-						memToReg    <= '0';
-						
-						state 		<= decode;
+						write 		    <= '0';
+						iord 		    <= '0';
+						irWrite 	    <= '0';
+						regWrite 	    <= '0';
+						pcwrite		    <= '0';
+						memToReg        <= '0';						
+						state 		    <= decode;
 					WHEN decode =>
-						irWrite 	<= '1';
-																	
-						state 		<= execute;
+						irWrite 	    <= '1';																	
+						state 		    <= execute;
 					WHEN execute =>
-						state 		<= mem_pc;
-						iord 		<= '-';
-						irWrite 	<= '0';
-						regWrite 	<= '0';
-						pcwrite		<= '0';
-						alu_carry_in<= '0';
-						flag_reg_write := '1';
-						mem_write_flag := '0';
-						mem_read_flag := '0';
-						pc_jump_flag   := '0';
-						pc_branch_flag:= '0';
-						pc_src  <= pc_alu;
+						state 		    <= mem_pc;
+						iord 		    <= '-';
+						irWrite 	    <= '0';
+						regWrite 	    <= '0';
+						pcwrite		    <= '0';
+						alu_carry_in    <= '0';
+						flag_reg_write  := '1';
+						mem_write_flag  := '0';
+						mem_read_flag   := '0';
+						pc_jump_flag    := '0';
+						pc_branch_flag  := '0';
+						pc_src          <= pc_alu;
 						
 						
 						CASE databus_in(31 DOWNTO 26) IS
@@ -120,41 +118,34 @@ BEGIN
 									WHEN F_mult =>
 									    alu_sel     <= alu_add; 
 									    hi_lo_write <= '1';
-									    hi_select <= hi_shift_right;
-									    lo_select <= lo_shift_right;
-									    alu_srca <= m_regHI;
+									    hi_select   <= hi_shift_right;
+									    lo_select   <= lo_shift_right;
+									    alu_srca    <= m_regHI;
 									    flag_reg_write := '0';
+									    
 								        IF cycle_cnt = 0 THEN
-								            alu_srca  <= m_reg; 
-								            hi_select <= hi_0;
-								            lo_select <= lo_operandA;
-									        state <= execute;
+								            alu_srca    <= m_reg; 
+								            hi_select   <= hi_0;
+								            lo_select   <= lo_operandA;
+									        state       <= execute;
 									        cycle_cnt := cycle_cnt + 1;
 									    ELSIF cycle_cnt = 32 THEN
-									        alu_srcb <= m_reg_invert;
-									        cycle_cnt := 0;
-									        alu_carry_in <= '1'; -- minus in last round
+									        alu_srcb    <= m_reg_invert;
+									        cycle_cnt   := 0;
+									        alu_carry_in<= '1'; -- minus in last cycle
 									    ELSE
-									        cycle_cnt := cycle_cnt + 1;
-									        state <= execute;
+									        cycle_cnt   := cycle_cnt + 1;
+									        state   <= execute;
 									    END IF;
-									    
-									    
-									    
-									    
-									    
-									    
-									    
-									    
-								   WHEN F_divu =>  
-									    alu_sel <= alu_add;
-									    hi_lo_write <= '1';
-									    flag_reg_write := '0';
-									    hi_select <= hi_shift_left;
-									    lo_select <= lo_shift_left;
-									    alu_srca <= m_regHI;
-									    alu_srcb <= m_reg_invert;
-									    alu_carry_in<= '1';
+									WHEN F_divu =>  
+									    alu_sel         <= alu_add;
+									    hi_lo_write     <= '1';
+									    flag_reg_write  := '0';
+									    hi_select       <= hi_shift_left;
+									    lo_select       <= lo_shift_left;
+									    alu_srca        <= m_regHI;
+									    alu_srcb        <= m_reg_invert;
+									    alu_carry_in    <= '1';
 									    
 									    IF cycle_cnt = 0 THEN
 									        alu_srca  <= m_reg; 
@@ -169,20 +160,12 @@ BEGIN
 									        cycle_cnt := cycle_cnt + 1;  
 									        state <= execute;
 									    END IF;
-									    
-									    
-									    
-									    
-									    
-									    
-									    
-									    
-									WHEN F_mfhi =>
+									 WHEN F_mfhi =>
 									    alu_sel 	<= alu_add;
-									    alu_srca <= m_regHI;
+									    alu_srca    <= m_regHI;
 									WHEN F_mflo => 
 									    alu_sel 	<= alu_add;  
-									    alu_srca <= m_regLO;
+									    alu_srca    <= m_regLO;
 									WHEN OTHERS =>
 								END CASE;
 							
@@ -209,44 +192,38 @@ BEGIN
 	                            alu_sel     <= alu_or;
 
 							WHEN Ilw =>
-							    write 		<= '0';
-								regDst		<= '1'; -- src_tgt
-								alu_srca	<= m_reg;
-								alu_srcb 	<= m_imma;
-								alu_sel		<= alu_add;
-								iord 		<= '1';
-								mem_read_flag := '1';
-								--flag_mem_to_reg := '1';
-								
+							    write 		    <= '0';
+								regDst		    <= '1'; -- src_tgt
+								alu_srca	    <= m_reg;
+								alu_srcb 	    <= m_imma;
+								alu_sel		    <= alu_add;
+								iord 		    <= '1';
+								mem_read_flag   := '1';
 							WHEN Isw => 
-							    alu_srca	<= m_reg;
-								alu_srcb 	<= m_imma;
-								alu_sel		<= alu_add;
-							    iord 		<= '1';
-							    flag_reg_write := '0';
-								mem_write_flag := '1';
-								
+							    alu_srca	    <= m_reg;
+								alu_srcb 	    <= m_imma;
+								alu_sel		    <= alu_add;
+							    iord 		    <= '1';
+							    flag_reg_write  := '0';
+								mem_write_flag  := '1';								
 							WHEN Ibgtz  =>
-							    alu_srca	<= m_reg;
-								alu_srcb	<= m_reg; -- becomes register $0
-								alu_sel     <= alu_xor;
-								flag_reg_write := '0';
+							    alu_srca	    <= m_reg;
+								alu_srcb	    <= m_reg; -- becomes register $0
+								alu_sel         <= alu_xor;
+								flag_reg_write  := '0';
 								
 							    
 							WHEN Ibeq   =>	
-							    alu_srca	<= m_reg;
-								alu_srcb	<= m_reg;
-								alu_sel     <= alu_xor;
-								flag_reg_write := '0';
+							    alu_srca	    <= m_reg;
+								alu_srcb	    <= m_reg;
+								alu_sel         <= alu_xor;
+								flag_reg_write  := '0';
 								
 							WHEN Jjump =>
-							    pc_jump_flag := '1';
-							    flag_reg_write := '0';
-							    pc_src    <= pc_jump;
-							    
-							
+							    pc_jump_flag    := '1';
+							    flag_reg_write  := '0';
+							    pc_src          <= pc_jump;
 							WHEN OTHERS =>
-
 						END CASE;
 										
 					WHEN mem_pc=>	
@@ -259,9 +236,9 @@ BEGIN
 					    END IF;
 					    
 					    IF pc_jump_flag = '1' THEN
-					        pc_src    <= pc_jump;
+					        pc_src      <= pc_jump;
 		                ELSE
-		                    pc_src    <= pc_alu;
+		                    pc_src      <= pc_alu;
 		                    alu_srca	<= m_pc;
 						    alu_srcb	<= m_pc4;
 		                END IF;
