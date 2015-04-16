@@ -10,6 +10,7 @@ vcom memory.vhd
 vcom topEntity_compare.vhd
 vsim work.topEntity_compare
 
+add wave -label "Address_bus compare" psl_address_bus
 add wave -label "Reset" sim:/topentity_compare/reset
 add wave -label "Clock" sim:/topentity_compare/clk
 add wave -label "address bus memory" sim:/topentity_compare/address_mem
@@ -33,6 +34,8 @@ add wave -label "state alu" sim:/topentity_compare/proc/contr/state
 add wave -label "memory" sim:/topentity_compare/mem/mem
 
 add wave -label "reg alu" sim:/topentity_compare/proc/dtpath/reg
+add wave -label "reg bhv low" sim:/topentity_compare/proc/dtpath/reg_LO
+add wave -label "reg bhv high" sim:/topentity_compare/proc/dtpath/reg_HI
 add wave -label "reg bhv" sim:/topentity_compare/proc_bhv/reg
 add wave -label "reg bhv low" sim:/topentity_compare/proc_bhv/reg_LO
 add wave -label "reg bhv high" sim:/topentity_compare/proc_bhv/reg_HI

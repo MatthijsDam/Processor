@@ -20,10 +20,7 @@ ENTITY memory IS
 	);
 END memory;
 
-ARCHITECTURE behaviour OF memory IS
-	CONSTANT low_address	: INTEGER := 0; 
-	CONSTANT high_address	: INTEGER := 255;
-	
+ARCHITECTURE behaviour OF memory IS	
 	SIGNAL mem 		: mem_array := work.program.program;
 	
 	BEGIN
@@ -38,8 +35,7 @@ ARCHITECTURE behaviour OF memory IS
 		    databus_out <= mem(address);
 			IF rising_edge(clk) THEN
 				IF write = '1' THEN
-					mem(address) <= databus_in;			
-				ELSE
+					mem(address) <= databus_in;		
 				END IF;
 			END IF;
 		END PROCESS;

@@ -24,7 +24,7 @@ ENTITY processor_bhv IS
 END processor_bhv;
 
 ARCHITECTURE behaviour OF processor_bhv IS
-    TYPE fsm_state_t IS (fetch, execute, mem_read,mem_write);
+    TYPE fsm_state_t IS (fetch, execute, mem_read);
     SIGNAL state : fsm_state_t;  
       
     TYPE reg_bank_t IS ARRAY (0 TO 31) OF std_logic_vector(31 DOWNTO 0); 
@@ -89,14 +89,6 @@ BEGIN
             databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
             address_bus     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
 
-        ELSIF rising_edge(clk)  AND enable = '0' AND state = fetch  THEN
-		-- initiating instruction fetch allowd even when we are disabled
-		    memory_read(pc);
-		    -- Increase program counter
-		    pc := pc+4;
-
-		    state <= execute;
-            
         ELSIF rising_edge(clk)  AND enable = '1'  THEN
             CASE state IS
                 WHEN fetch =>
@@ -212,15 +204,11 @@ BEGIN
                         address_temp := std_logic_vector(signed(operand1) + signed(imm));
                         data_temp    := operand2;						
                         memory_write(address_temp,data_temp);
-                        state 		<= mem_write;
                      WHEN OTHERS =>     
                     END CASE;
                 WHEN mem_read =>
                     reg(src_tgt)  <= databus_in;
                                    
-                    state     <= fetch;
-				WHEN mem_write =>
-					                    
                     state     <= fetch;
             END CASE;
         END IF;
