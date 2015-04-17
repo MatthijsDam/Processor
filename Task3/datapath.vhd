@@ -81,9 +81,26 @@ BEGIN
 
 		IF reset='1' THEN 
             pc              <= (OTHERS => '0');
-            databus_out     <= "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU";
-            reg_HI      <= (OTHERS => '0');
-			reg_LO      <= (OTHERS => '0');
+			databus_out		<= (OTHERS => '0');
+			address_bus		<= (OTHERS => '0');
+			alu_reg			<= (OTHERS => '0');
+			alu_inp0		:= (OTHERS => '0');
+			alu_inp1		:= (OTHERS => '0');
+			alu_inp0_32		:= '0';
+			alu_inp1_32		:= '0';
+			
+			opcode		 	<= (OTHERS => '0');
+			funct			<= (OTHERS => '0');
+			src				<= (OTHERS => '0');
+			src_tgt			<= (OTHERS => '0');
+			dst				<= (OTHERS => '0');
+			
+            reg_HI      	<= (OTHERS => '0');
+			reg_LO      	<= (OTHERS => '0');
+			reg				<= ("00000000000000000000000000000000",
+								OTHERS => "00000000000000000000000000000000"
+								);
+			
 		ELSIF rising_edge(clk) THEN		
             databus_out <= reg(to_integer(unsigned(src_tgt)));
             carry_in_loc(0) := alu_carry_in;
