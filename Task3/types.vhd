@@ -10,7 +10,7 @@ PACKAGE types IS
 	TYPE fsm_mult_t  IS (mult_s, mult_n, mult_e);
 	TYPE fsm_divu_t  IS (divu_s, divu_n, divu_e);
 	TYPE alu_ina_t 	 IS (m_pc,m_reg,m_regHI,m_regLO);
-	TYPE alu_inb_t	 IS (m_pc4,m_reg,m_reg_invert,m_imma, m_imml,m_imm_upper);
+	TYPE alu_inb_t	 IS (m_pc4,m_reg,m_reg_invert,m_imma, m_immasl2, m_imml,m_imm_upper);
 	TYPE hi_select_t   IS (hi_0, hi_shift_left, hi_shift_right );
 	TYPE lo_select_t   IS (lo_operandA, lo_shift_left, lo_shift_right, lo_0 );
 END types;

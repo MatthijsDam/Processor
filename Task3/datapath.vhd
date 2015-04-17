@@ -140,11 +140,12 @@ BEGIN
 
 			CASE alu_srcb IS
 				WHEN m_pc4 =>
-                    IF (alu_zero = '1' AND opcode = Rtype AND opcode= Ibeq ) OR (alu_gtz = '1' AND opcode = Rtype AND opcode = Ibgtz) THEN
-                        alu_inp1 := std_logic_vector(unsigned(imma(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
-                    ELSE  
-					    alu_inp1 := std_logic_vector(to_unsigned(4,32));
-					END IF;
+                    --IF (alu_zero = '1' AND opcode = Rtype AND opcode= Ibeq ) OR (alu_gtz = '1' AND opcode = Rtype AND opcode = Ibgtz) THEN
+                    --    alu_inp1 := std_logic_vector(unsigned(imma(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
+                    --ELSE  
+					--    alu_inp1 := std_logic_vector(to_unsigned(4,32));
+					--END IF;
+					alu_inp1 := "00000000000000000000000000000100"; 
 				WHEN m_reg =>
 				    alu_inp1 := reg(to_integer(unsigned(src_tgt)));
 			        IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
@@ -159,6 +160,12 @@ BEGIN
 			        END IF;	
 				WHEN m_imma =>
 					alu_inp1 := imma;
+			    WHEN m_immasl2 =>
+			        IF alu_zero = '1' AND (opcode= Ibeq OR opcode = Ibgtz) THEN
+			            alu_inp1 := std_logic_vector(signed(imma) sll 2); 
+			        ELSE
+			            alu_inp1 := (OTHERS => '0');
+			        END IF;
                 WHEN m_imml =>
                     alu_inp1 := imml;                
                 WHEN m_imm_upper=>

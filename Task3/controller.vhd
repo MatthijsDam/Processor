@@ -41,6 +41,7 @@ ARCHITECTURE behaviour OF controller IS
     
 BEGIN
 		PROCESS(clk,reset)
+		    VARIABLE opcode             : std_logic_vector(5 downto 0);
 		    VARIABLE flag_reg_write     : std_logic;
 		    VARIABLE flag_mem_to_reg    : std_logic;
 		    VARIABLE mem_write_flag     : std_logic;
@@ -95,9 +96,10 @@ BEGIN
 						pc_jump_flag    := '0';
 						pc_branch_flag  := '0';
 						pc_src          <= pc_alu;
+						opcode          := databus_in(31 DOWNTO 26);
 						
 						
-						CASE databus_in(31 DOWNTO 26) IS
+						CASE opcode IS
 							WHEN Rtype =>
 								regDst 		<= '0';
 								alu_srca	<= m_reg;
@@ -289,6 +291,16 @@ BEGIN
 						IF flag_reg_write = '1' THEN -- bij instructies die naar reg schrijven ( _ (sw, jump, b))
 						    regWrite 	<= '1';
 						END IF;
+						
+						IF opcode = Ibeq OR opcode = Ibgtz THEN
+						    pcwrite <= '1';
+						    alu_sel <= alu_add;
+						    alu_srca <= m_pc;
+						    alu_srcb <= m_immasl2;
+						    pc_src <= pc_alu;
+						END IF;
+						
+						
 							
 						iord		<= '0';	
 						state 		<= fetch;
