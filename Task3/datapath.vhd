@@ -95,11 +95,25 @@ BEGIN
 			src_tgt			<= (OTHERS => '0');
 			dst				<= (OTHERS => '0');
 			
+			imma 			<= (OTHERS => '0');
+			imml 		    <= (OTHERS => '0');
+			jump_address    <= (OTHERS => '0');
+			alu_zero        <= '0';
+			alu_gtz         <= '0';
+			
             reg_HI      	<= (OTHERS => '0');
 			reg_LO      	<= (OTHERS => '0');
 			reg				<= ("00000000000000000000000000000000",
 								OTHERS => "00000000000000000000000000000000"
 								);
+							
+			carry_in_loc	:= "0";
+			carry_out  		:= '0';
+			alu_out 		:= (OTHERS => '0');
+			temp_alu 		:= (OTHERS => '0');
+		
+			reg_dst			:= 0;
+			reg_inp			:= (OTHERS => '0');					
 			
 		ELSIF rising_edge(clk) THEN		
             databus_out <= reg(to_integer(unsigned(src_tgt)));
