@@ -86,8 +86,8 @@ BEGIN
             state           <= fetch;
             pc              := 0;
             write           <= '0';
-            databus_out     <= "00000000000000000000000000000000";
-            address_bus     <= "00000000000000000000000000000000";
+			databus_out		<= (OTHERS => '0');
+			address_bus		<= (OTHERS => '0');
 
         ELSIF rising_edge(clk)  AND enable = '1'  THEN
             CASE state IS
