@@ -32,8 +32,7 @@ ENTITY datapath_convert IS
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
 		regWrite 	: IN  std_logic;
-		memToReg 	: IN  std_logic;
-		operation	: IN  operation_t
+		memToReg 	: IN  std_logic
 		);
 END datapath_convert;
 
@@ -57,7 +56,6 @@ ARCHITECTURE converter OF datapath_convert IS
 	\alu_srcb.m_reg\ : IN std_logic;
 	\alu_srcb.m_reg_invert\ : IN std_logic;
 	\alu_srcb.m_imma\ : IN std_logic;
-	\alu_srcb.m_immasl2\ : IN std_logic;
 	\alu_srcb.m_imml\ : IN std_logic;
 	\alu_srcb.m_imm_upper\ : IN std_logic;
 	\alu_sel.alu_add\ : IN std_logic;
@@ -78,11 +76,7 @@ ARCHITECTURE converter OF datapath_convert IS
 	iord : IN std_logic;
 	irWrite : IN std_logic;
 	regWrite : IN std_logic;
-	memToReg : IN std_logic;
-	\operation.divu\ : IN std_logic;
-	\operation.mult\ : IN std_logic;
-	\operation.branch\ : IN std_logic;
-	\operation.other\ : IN std_logic
+	memToReg : IN std_logic
 	);
 	END component;	
 	
@@ -112,10 +106,6 @@ SIGNAL \lo_select.lo_operandA\ : std_logic;
 SIGNAL \lo_select.lo_shift_left\ : std_logic;
 SIGNAL \lo_select.lo_shift_right\ : std_logic;
 SIGNAL \lo_select.lo_0\ : std_logic;
-SIGNAL \operation.divu\ : std_logic;
-SIGNAL \operation.mult\ : std_logic;
-SIGNAL \operation.branch\ : std_logic;
-SIGNAL \operation.other\ : std_logic;
 	
 BEGIN
 
@@ -146,7 +136,6 @@ BEGIN
 \alu_srcb.m_reg\ => \alu_srcb.m_reg\,
 \alu_srcb.m_reg_invert\ => \alu_srcb.m_reg_invert\,
 \alu_srcb.m_imma\ => \alu_srcb.m_imma\,
-\alu_srcb.m_immasl2\ => \alu_srcb.m_immasl2\,
 \alu_srcb.m_imml\ => \alu_srcb.m_imml\,
 \alu_srcb.m_imm_upper\ => \alu_srcb.m_imm_upper\,
 \alu_sel.alu_add\ => \alu_sel.alu_add\,
@@ -160,11 +149,7 @@ BEGIN
 \lo_select.lo_operandA\ => \lo_select.lo_operandA\,
 \lo_select.lo_shift_left\ => \lo_select.lo_shift_left\,
 \lo_select.lo_shift_right\ => \lo_select.lo_shift_right\,
-\lo_select.lo_0\ => \lo_select.lo_0\,
-\operation.divu\ => \operation.divu\,
-\operation.mult\ => \operation.mult\,
-\operation.branch\ => \operation.branch\,
-\operation.other\ => \operation.other\
+\lo_select.lo_0\ => \lo_select.lo_0\
 
 	);	
 
@@ -204,8 +189,6 @@ CASE alu_srcb IS
 		\alu_srcb.m_reg_invert\ <= '1';
 	WHEN m_imma =>
 		\alu_srcb.m_imma\ <= '1';
-	WHEN m_immasl2 =>
-		\alu_srcb.m_immasl2\ <= '1';
 	WHEN m_imml =>
 		\alu_srcb.m_imml\ <= '1';
 	WHEN m_imm_upper =>
@@ -268,23 +251,6 @@ CASE lo_select IS
 END CASE;
 END PROCESS;
 
-PROCESS (operation)
-BEGIN
-\operation.divu\ <= '0';
-\operation.mult\ <= '0';
-\operation.branch\ <= '0';
-\operation.other\ <= '0';
-CASE operation IS
-	WHEN divu =>
-		\operation.divu\ <= '1';
-	WHEN mult =>
-		\operation.mult\ <= '1';
-	WHEN branch =>
-		\operation.branch\ <= '1';
-	WHEN other =>
-		\operation.other\ <= '1';
-END CASE;
-END PROCESS;
 
 PROCESS (pc_src)
 BEGIN
