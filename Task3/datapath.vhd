@@ -33,8 +33,7 @@ ENTITY datapath IS
 		iord		: IN  std_logic;
 		irWrite 	: IN  std_logic;
 		regWrite 	: IN  std_logic;
-		memToReg 	: IN  std_logic;
-		operation	: IN  operation_t
+		memToReg 	: IN  std_logic
 		);
 END datapath;
 
@@ -47,6 +46,8 @@ ARCHITECTURE behaviour OF datapath IS
 	SIGNAL pc		 		: std_logic_vector(31 DOWNTO 0); -- increment by ALU
 	
 	-- Instruction register
+	SIGNAL opcode           : std_logic_vector(5 DOWNTO 0);
+	SIGNAL funct			: std_logic_vector(5 DOWNTO 0);
 	SIGNAL src				: std_logic_vector(4 DOWNTO 0);
 	SIGNAL src_tgt			: std_logic_vector(4 DOWNTO 0);
 	SIGNAL dst				: std_logic_vector(4 DOWNTO 0);
@@ -90,9 +91,11 @@ BEGIN
             alu_inp1_32 := '0';
 
 			IF irWrite ='1' THEN
+				opcode      <= databus_in(31 DOWNTO 26);
 				src 		<= databus_in(25 DOWNTO 21);
 				src_tgt		<= databus_in(20 DOWNTO 16);
 				dst 		<= databus_in(15 DOWNTO 11);
+				funct		<= databus_in(5 DOWNTO 0);
 				jump_address<= databus_in(25 DOWNTO 0);
 				imma 		<= std_logic_vector(resize(signed(databus_in(15 DOWNTO 0)),32));
 				imml 		<= std_logic_vector(resize(unsigned(databus_in(15 DOWNTO 0)),32));
@@ -125,7 +128,7 @@ BEGIN
    
 			    WHEN m_regHI =>
 			        alu_inp0 := reg_HI;
-        		    IF operation = divu AND carry_in_loc = "1" THEN
+        		    IF opcode = Rtype AND funct = F_divu AND carry_in_loc = "1" THEN
 			            alu_inp0 := reg_HI(30 DOWNTO 0) & reg_LO(31);
 			         END IF;
 			    WHEN m_regLO => -- alleen voor mflo
@@ -137,27 +140,32 @@ BEGIN
 
 			CASE alu_srcb IS
 				WHEN m_pc4 =>
-					alu_inp1 := "00000000000000000000000000000100"; 
+                    IF (alu_zero = '1' AND opcode= Ibeq ) OR (alu_gtz = '1' AND opcode = Ibgtz) THEN
+                        alu_inp1 := std_logic_vector(unsigned(imma(29 DOWNTO 0))+1) & "00"; -- shift left 2 and add 4
+                    ELSE  
+					    alu_inp1 := std_logic_vector(to_unsigned(4,32));
+					END IF;
+					--alu_inp1 := "00000000000000000000000000000100"; 
 				WHEN m_reg =>
 				    alu_inp1 := reg(to_integer(unsigned(src_tgt)));
-			        IF operation = mult AND reg_LO(0) = '0' THEN
+			        IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
 			            alu_inp1 := (OTHERS => '0');
 			        END IF;		
 				WHEN m_reg_invert =>
                     
 				    alu_inp1 := not reg(to_integer(unsigned(src_tgt)));
-				    IF operation = mult AND reg_LO(0) = '0' THEN
+				    IF opcode = Rtype AND funct = F_mult AND reg_LO(0) = '0' THEN
 			            alu_inp1 := (OTHERS => '0');
 			            carry_in_loc(0) := '0';
 			        END IF;	
 				WHEN m_imma =>
 					alu_inp1 := imma;
-			    WHEN m_immasl2 =>
-			        IF alu_zero = '1' AND operation = branch THEN
-			            alu_inp1 := std_logic_vector(signed(imma) sll 2); 
-			        ELSE
-			            alu_inp1 := (OTHERS => '0');
-			        END IF;
+			    --WHEN m_immasl2 =>
+			     --   IF alu_zero = '1' AND (opcode= Ibeq OR opcode = Ibgtz) THEN
+			      --      alu_inp1 := std_logic_vector(signed(imma) sll 2); 
+			       -- ELSE
+			        --    alu_inp1 := (OTHERS => '0');
+			        --END IF;
                 WHEN m_imml =>
                     alu_inp1 := imml;                
                 WHEN m_imm_upper=>
@@ -169,10 +177,10 @@ BEGIN
 			
 			CASE alu_sel IS
 				WHEN alu_add =>
-				    IF operation = mult THEN
+				    IF opcode = Rtype AND funct = F_mult THEN
 				        alu_inp0_32 := alu_inp0(31);
 				        alu_inp1_32 := alu_inp1(31);
-				    ELSIF operation = divu THEN
+				    ELSIF opcode = Rtype AND funct = F_divu THEN
 				        alu_inp0_32 := '0';
 				        alu_inp1_32 := '1';
 				    END IF;

@@ -78,7 +78,7 @@ ARCHITECTURE behaviour OF topEntity_compare IS
 	BEGIN	
 		-- PSL default clock is rising_edge(clk);
 		-- PSL psl_address_bus:assert forall i in {0 to 255} :  
-		--   always (( to_integer(unsigned(address_bus_bhv))  mod 1024 ) = 4*i) -> next_e[0 to 36](( to_integer(unsigned(address_bus_alu)) mod 1024) = 4*i);
+		--   always (( to_integer(unsigned(address_bus_bhv))  mod 1024 ) = 4*i) -> next_e[0 to 37](( to_integer(unsigned(address_bus_alu)) mod 1024) = 4*i);
 		-- mod 1024 because thats the size of our memory
 		comp : compare
 		PORT MAP(

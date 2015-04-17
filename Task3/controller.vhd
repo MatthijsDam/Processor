@@ -32,8 +32,7 @@ ENTITY controller IS
 		hi_lo_write     : OUT std_logic;
 		irWrite 		: OUT std_logic;
 		regWrite		: OUT std_logic;
-		memToReg		: OUT std_logic;
-		operation		: OUT operation_t
+		memToReg		: OUT std_logic
 		);
 END controller;
 
@@ -98,7 +97,7 @@ BEGIN
 						pc_branch_flag  := '0';
 						pc_src          <= pc_alu;
 						opcode          := databus_in(31 DOWNTO 26);
-						operation		<= other;
+						
 						
 						CASE opcode IS
 							WHEN Rtype =>
@@ -127,7 +126,6 @@ BEGIN
 									    lo_select   <= lo_shift_right;
 									    alu_srca    <= m_regHI;
 									    flag_reg_write := '0';
-										operation 	<= mult;
 									    
 								        IF cycle_cnt = 0 THEN
 								            alu_srca    <= m_reg; 
@@ -152,7 +150,6 @@ BEGIN
 									    alu_srca        <= m_regHI;
 									    alu_srcb        <= m_reg_invert;
 									    alu_carry_in    <= '1';
-										operation 		<= divu;
 									    
 									    IF cycle_cnt = 0 THEN -- INIT
 									        alu_srca  <= m_reg; 
@@ -247,14 +244,13 @@ BEGIN
 								alu_srcb	    <= m_reg; -- becomes register $0
 								alu_sel         <= alu_xor;
 								flag_reg_write  := '0';
-								operation		<= branch;
+								
 							    
 							WHEN Ibeq   =>	
 							    alu_srca	    <= m_reg;
 								alu_srcb	    <= m_reg;
 								alu_sel         <= alu_xor;
 								flag_reg_write  := '0';
-								operation		<= branch;
 								
 							WHEN Jjump =>
 							    pc_jump_flag    := '1';
@@ -296,13 +292,13 @@ BEGIN
 						    regWrite 	<= '1';
 						END IF;
 						
-						IF opcode = Ibeq OR opcode = Ibgtz THEN
-						    pcwrite <= '1';
-						    alu_sel <= alu_add;
-						    alu_srca <= m_pc;
-						    alu_srcb <= m_immasl2;
-						    pc_src <= pc_alu;
-						END IF;
+					--	IF opcode = Ibeq OR opcode = Ibgtz THEN
+					--	    pcwrite <= '1';
+					--	    alu_sel <= alu_add;
+					--	    alu_srca <= m_pc;
+					--	    alu_srcb <= m_immasl2;
+					--	    pc_src <= pc_alu;
+					--	END IF;
 						
 						
 							

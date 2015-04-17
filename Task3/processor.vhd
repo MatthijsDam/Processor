@@ -45,8 +45,7 @@ ARCHITECTURE behaviour OF processor IS
 			iord		: IN  std_logic;
 			irWrite 	: IN  std_logic;
 			regWrite 	: IN  std_logic;
-			memToReg	: IN  std_logic;
-			operation	: IN  operation_t
+			memToReg	: IN  std_logic
 		);
 	END component;	
 	
@@ -70,8 +69,7 @@ ARCHITECTURE behaviour OF processor IS
 		    hi_lo_write     : OUT std_logic;
 			irWrite 		: OUT std_logic;
 			regWrite		: OUT std_logic;
-			memToReg		: OUT std_logic;
-			operation		: OUT operation_t
+			memToReg		: OUT std_logic
 		);
 	END component;	
 	
@@ -90,7 +88,6 @@ ARCHITECTURE behaviour OF processor IS
 	SIGNAL	hi_select   : hi_select_t;
 	SIGNAL	lo_select   : lo_select_t;
 	SIGNAL	hi_lo_write : std_logic;
-	SIGNAL operation 	: operation_t;
 
 	
 BEGIN
@@ -115,8 +112,7 @@ BEGIN
 		hi_lo_write => hi_lo_write,
 		irWrite 	=> irWrite,
 		regWrite 	=> regWrite,
-		memToReg 	=> memToReg,
-		operation 	=> operation
+		memToReg 	=> memToReg
 	);
 	
 	dtpath : datapath
@@ -140,7 +136,6 @@ BEGIN
 		address_bus => address_bus,
 		databus_out => databus_out,
 		databus_in	=> databus_in,
-		memToReg 	=> memToReg,
-		operation 	=> operation
+		memToReg 	=> memToReg
 	);	
 END ARCHITECTURE;

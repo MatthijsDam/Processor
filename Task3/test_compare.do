@@ -40,7 +40,6 @@ add wave -label "reg bhv" sim:/topentity_compare/proc_bhv/reg
 add wave -label "reg bhv low" sim:/topentity_compare/proc_bhv/reg_LO
 add wave -label "reg bhv high" sim:/topentity_compare/proc_bhv/reg_HI
 
-add wave -label "operation"  sim:/topentity_compare/proc/operation
 
 radix signal sim:/topentity_compare/address_mem hexadecimal
 radix signal sim:/topentity_compare/address_bus_bhv hexadecimal
