@@ -4,3 +4,8 @@ transcript
 db/
 incremental_db/
 output_files/
+
+*/wlft*
+*.qpf
+*.qsf
+*.qws
