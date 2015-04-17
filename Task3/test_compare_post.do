@@ -47,8 +47,41 @@ radix signal sim:/topentity_compare_post/address_mem hexadecimal
 radix signal sim:/topentity_compare_post/address_bus_bhv hexadecimal
 radix signal sim:/topentity_compare_post/address_bus_alu hexadecimal
 
-force clk 0,1 10ns -repeat 20ns
+
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/address_bus
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/alu_carry_in
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/alu_out
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/alu_reg
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/clk
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/databus_in
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/databus_out
+#add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/devclrn
+#add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/devoe
+#add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/devpor
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/div_by_zero
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/dst
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/funct
+#add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/gnd
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/hi_lo_write
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/imma
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/iord
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/irWrite
+#add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/jump_address
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/memToReg
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/opcode
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/pc
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/pc_src
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/pcwrite
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/regDst
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/regWrite
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/reg_HI
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/reg_LO
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/reset
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/src
+add wave -position end  sim:/topentity_compare_post/proc/dtpath/dtpath/src_tgt
+
+force clk 0,1 20ns -repeat 40ns
 force reset 1
-run 50ns
+run 100ns
 force reset 0
 run 3000ns

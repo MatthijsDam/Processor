@@ -255,7 +255,7 @@ END PROCESS;
 PROCESS (pc_src)
 BEGIN
 	IF pc_src = pc_jump THEN
-		pc_src_new <= '0';
+		pc_src_new <= '0'; -- TODO weet deze mapping niet zeker
 	ELSE
 		pc_src_new <= '1';
 	END IF;
