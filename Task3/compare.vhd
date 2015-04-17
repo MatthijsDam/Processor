@@ -46,10 +46,10 @@ BEGIN
 			    previous_data_on_bus		:= data_bus_alu;
 
 		    ELSIF address_bus_alu = previous_address_on_bus AND write_bhv = '0' THEN -- bhv lees, alu nog niet zo ver
-			    ASSERT false REPORT "Behavioral read pause" SEVERITY warning ;
+			    --ASSERT false REPORT "Behavioral read pause" SEVERITY warning ;
 			    enable_bhv 		<= '0';
 		    ELSIF write_bhv = '1' AND write_alu = '0' THEN -- bhv schrijft, alu nog niet zo ver
-			    ASSERT false REPORT "Behavioral write pause" SEVERITY warning ;
+			    --ASSERT false REPORT "Behavioral write pause" SEVERITY warning ;
 			    enable_bhv 		<= '0';
 			
 
